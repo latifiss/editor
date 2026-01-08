@@ -1,0 +1,40 @@
+/* Mixins converted to utility classes */
+
+/* Font size utilities */
+.font-size-xs {
+  font-size: var(--text-size-xs);
+  line-height: var(--text-lineHeight-xs);
+}
+
+.font-size-sm {
+  font-size: var(--text-size-sm);
+  line-height: var(--text-lineHeight-sm);
+}
+
+.font-size-base {
+  font-size: var(--text-size-base);
+  line-height: var(--text-lineHeight-base);
+}
+
+.font-size-lg {
+  font-size: var(--text-size-lg);
+  line-height: var(--text-lineHeight-lg);
+}
+
+.font-size-xl {
+  font-size: var(--text-size-xl);
+  line-height: var(--text-lineHeight-xl);
+}
+
+.font-size-2xl {
+  font-size: var(--text-size-2xl);
+  line-height: var(--text-lineHeight-2xl);
+}
+
+/* Custom scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rte-editor-scrollbar) transparent;
+  scrollbar-gutter: stable;
+}
+

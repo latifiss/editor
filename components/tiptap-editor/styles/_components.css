@@ -1,0 +1,565 @@
+@import "./_variables.css";
+@import "./_functions.css";
+@import "./_mixins.css";
+
+/* ============================================================================ */
+/* BASE COMPONENTS */
+/* ============================================================================ */
+
+/* BUTTON */
+/* ---------------------------------------------------------------------------- */
+.rte-button {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: 2rem;
+  padding-inline: 0.75rem;
+  font-weight: 500;
+  border-radius: var(--rte-radius-sm);
+  border: 1px solid transparent;
+  user-select: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease-in;
+  font-size: var(--text-size-sm);
+  line-height: var(--text-lineHeight-sm);
+}
+
+.rte-button:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.rte-button__text {
+  display: inline-flex;
+  align-items: center;
+  flex: 1 auto;
+  text-align: inherit;
+}
+
+.rte-button * + .rte-button__text {
+  margin-left: 0.5rem;
+}
+
+/* Modifiers */
+.rte-button--icon-only {
+  padding: 0 !important;
+  aspect-ratio: 1/1;
+}
+
+.rte-button--block {
+  width: 100%;
+}
+
+/* Variants */
+.rte-button--primary {
+  color: var(--rte-primary-fg);
+  background-color: var(--rte-primary);
+  border-color: var(--rte-primary);
+}
+
+.rte-button--primary:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--rte-primary) 85%, white);
+}
+
+.rte-button--secondary {
+  color: var(--rte-secondary-fg);
+  background-color: var(--rte-secondary);
+  border-color: var(--rte-secondary);
+}
+
+.rte-button--secondary:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--rte-secondary) 8%, black);
+}
+
+.rte-button--outline {
+  background-color: var(--rte-bg);
+  border-color: var(--rte-border);
+}
+
+.rte-button--outline:not(:disabled):hover {
+  background-color: var(--rte-muted);
+  color: var(--rte-muted-fg);
+}
+
+.rte-button--ghost {
+  color: var(--rte-accent-fg);
+}
+
+.rte-button--ghost:not(:disabled):hover {
+  background-color: var(--rte-accent);
+  color: var(--rte-fg);
+}
+
+/* INPUT */
+/* ---------------------------------------------------------------------------- */
+.rte-input {
+  display: flex;
+  width: 100%;
+  height: 2rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: var(--rte-radius-sm);
+  border: 1px solid var(--rte-border);
+  background-color: var(--rte-muted);
+  color: var(--rte-fg);
+  outline: transparent solid 2px;
+  font-size: var(--text-size-sm);
+  line-height: var(--text-lineHeight-sm);
+}
+
+.rte-input::placeholder {
+  color: var(--rte-muted-fg);
+}
+
+.rte-input:focus-visible {
+  outline-color: var(--rte-primary);
+}
+
+/* LABEL */
+/* ---------------------------------------------------------------------------- */
+.rte-label {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  font-size: 90%;
+  font-weight: bold;
+  line-height: 1.25rem;
+  color: var(--rte-muted-fg);
+}
+
+/* ============================================================================ */
+/* OVERLAY COMPONENTS */
+/* ============================================================================ */
+
+/* TOOLTIP */
+/* ---------------------------------------------------------------------------- */
+.rte-tooltip {
+  z-index: 50;
+  min-height: 1.75rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: var(--rte-radius-sm);
+  background-color: var(--rte-tooltip);
+  color: var(--rte-tooltip-fg);
+  font-weight: 500;
+  line-height: 1.5;
+  text-wrap: nowrap;
+  font-size: var(--text-size-xs);
+  line-height: var(--text-lineHeight-xs);
+}
+
+/* DROPDOWN */
+/* ---------------------------------------------------------------------------- */
+.rte-dropdown {
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.375rem;
+  background-color: var(--rte-bg);
+  border-radius: var(--rte-radius);
+  box-shadow: var(--rte-shadow-1);
+}
+
+.rte-dropdown__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  border-radius: var(--rte-radius-sm);
+  color: var(--rte-fg);
+  cursor: pointer;
+  outline: none;
+  font-size: var(--text-size-sm);
+  line-height: var(--text-lineHeight-sm);
+}
+
+.rte-dropdown__item:hover {
+  background-color: var(--rte-accent);
+}
+
+.rte-dropdown__item[data-active],
+.rte-dropdown__item[data-active]:hover {
+  color: var(--rte-primary);
+  background-color: var(--rte-accent);
+}
+
+.rte-dropdown__indicator {
+  display: flex;
+  justify-content: center;
+  width: 1rem;
+}
+
+.rte-dropdown__separator {
+  height: 1px;
+  margin: 0.125rem 0;
+  background-color: var(--rte-border);
+}
+
+/* POPOVER */
+/* ---------------------------------------------------------------------------- */
+.rte-popover {
+  z-index: 50;
+  padding: 0.25rem;
+  background-color: var(--rte-bg);
+  border-radius: var(--rte-radius);
+  box-shadow: var(--rte-shadow-1);
+}
+
+/* DIALOG */
+/* ---------------------------------------------------------------------------- */
+.rte-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--rte-overlay);
+  backdrop-filter: blur(3px);
+}
+
+/* ============================================================================ */
+/* LAYOUT COMPONENTS */
+/* ============================================================================ */
+
+/* TOOLBAR */
+/* ---------------------------------------------------------------------------- */
+.rte-toolbar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem;
+}
+
+.rte-toolbar--vertical {
+  flex-direction: column;
+}
+
+.rte-toolbar--dense {
+  padding: 0.125rem;
+}
+
+.rte-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.rte-toolbar--vertical .rte-toolbar__group {
+  flex-direction: column;
+}
+
+.rte-toolbar__divider {
+  flex-shrink: 0;
+  width: 1px;
+  height: 1.25rem;
+  margin: 0 0.25rem;
+  border: 0 solid var(--rte-border);
+  border-right-width: thin;
+}
+
+.rte-toolbar__divider--horizontal {
+  width: 100%;
+  height: 1px;
+  margin: 0.25rem 0;
+  border: 0 solid var(--rte-border);
+  border-bottom-width: thin;
+}
+
+/* ============================================================================ */
+/* FEATURE COMPONENTS */
+/* ============================================================================ */
+
+/* SEARCH INPUT */
+/* ---------------------------------------------------------------------------- */
+.rte-search-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.rte-search-input__icon {
+  position: absolute;
+  left: 0.625rem;
+  color: color-mix(in srgb, var(--rte-fg) 50%, transparent);
+  pointer-events: none;
+}
+
+.rte-search-input__input {
+  flex: 1;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.rte-search-input__input--no-icon {
+  padding-left: 0.75rem;
+}
+
+.rte-search-input__clear {
+  position: absolute;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: none;
+  border-radius: var(--rte-radius-sm);
+  background: none;
+  color: color-mix(in srgb, var(--rte-fg) 50%, transparent);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rte-search-input__clear:hover {
+  background: color-mix(in srgb, var(--rte-fg) 10%, transparent);
+  color: color-mix(in srgb, var(--rte-fg) 80%, transparent);
+}
+
+.rte-search-input__clear:active {
+  transform: scale(0.95);
+}
+
+/* RESIZER */
+/* ---------------------------------------------------------------------------- */
+.rte-resizer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  transition: none;
+}
+
+.rte-resizer__control {
+  position: absolute;
+  aspect-ratio: 1/1;
+  border: 2px solid var(--rte-bg);
+  background-color: var(--rte-primary);
+  pointer-events: auto;
+  transition: none;
+}
+
+/* COLOR PICKER */
+/* ---------------------------------------------------------------------------- */
+.rte-color__list {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.5rem;
+  row-gap: 0.5rem;
+}
+
+.rte-color__btn {
+  min-width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid var(--rte-border);
+  border-radius: var(--rte-radius-sm);
+  transform: scale(1);
+  transition: all 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.rte-color__btn:hover {
+  transform: scale(1.2);
+}
+
+.rte-color__btn[data-active] {
+  box-shadow: 0 0 0 1px var(--rte-bg), 0 0 0 3px var(--rte-primary);
+}
+
+.rte-cp {
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+}
+
+.rte-cp__tabs {
+  display: flex;
+  margin-inline: -0.25rem;
+  margin-top: -0.25rem;
+  border-bottom: 1px solid var(--rte-border);
+}
+
+.rte-cp__tab {
+  position: relative;
+  width: 100%;
+  font-size: 90%;
+}
+
+.rte-cp__tab:first-child::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  width: 1px;
+  height: 100%;
+  border-left: 1px solid var(--rte-border);
+}
+
+.rte-cp__tab[data-active]::before {
+  content: "";
+  position: absolute;
+  bottom: -0.125rem;
+  left: -0.125rem;
+  inset-inline: 0;
+  height: 2px;
+  background-color: var(--rte-primary);
+}
+
+.rte-cp__main {
+  margin-block: 0.75rem;
+  padding: 0 0.5rem;
+}
+
+.rte-cp__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.125rem;
+  margin-bottom: 0.5rem;
+  padding: 0 0.5rem;
+}
+
+.rte-cp-swatches,
+.rte-cp-custom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.rte-cp-custom__preview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* TABLE BUILDER */
+/* ---------------------------------------------------------------------------- */
+.rte-tb__builder {
+  font-size: 90%;
+}
+
+.rte-tb__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.5rem;
+}
+
+.rte-tb__row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.rte-tb__cell {
+  width: 1rem;
+  height: 1rem;
+  background-color: var(--rte-accent);
+  box-shadow: 0 0 0 1.5px var(--rte-border);
+}
+
+.rte-tb__cell--active {
+  box-shadow: 0 0 0 1.5px var(--rte-primary);
+}
+
+/* EMOJI PICKER */
+/* ---------------------------------------------------------------------------- */
+.rte-ep {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  margin: -0.25rem;
+}
+
+.rte-ep__search {
+  position: relative;
+  z-index: 10;
+  margin-inline: 0.625rem;
+  margin-top: 0.625rem;
+}
+
+.rte-ep__content {
+  height: 320px;
+  contain: strict;
+}
+
+.rte-ep__title {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 0.5rem 0.75rem;
+  background: color-mix(in srgb, var(--rte-bg) 85%, transparent);
+  font-size: var(--text-size-xs);
+  line-height: var(--text-lineHeight-xs);
+  font-weight: 500;
+  text-transform: capitalize;
+  backdrop-filter: blur(6px) saturate(120%);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  contain: content;
+}
+
+.rte-ep__row {
+  display: flex;
+  gap: 2px;
+  padding: 0 0.375rem;
+  contain: content;
+}
+
+.rte-ep__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1/1;
+  border: none;
+  background: none;
+  font-size: var(--text-size-lg);
+  line-height: var(--text-lineHeight-lg);
+  user-select: none;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  contain: layout paint;
+}
+
+.rte-ep__item:hover {
+  transform: scale(1.2);
+}
+
+.rte-ep__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  height: 100%;
+  padding: 3rem 1.5rem;
+  color: color-mix(in srgb, var(--rte-fg) 40%, transparent);
+}
+
+.rte-ep__empty p {
+  margin: 0;
+  font-size: var(--text-size-sm);
+  line-height: var(--text-lineHeight-sm);
+  font-weight: 500;
+}
+
+.rte-ep__preview {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.75rem;
+  border-top: 1px solid var(--rte-border);
+}
+
+.rte-ep__preview-emoji {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.rte-ep__preview-text {
+  font-size: var(--text-size-sm);
+  line-height: var(--text-lineHeight-sm);
+  font-weight: 500;
+  color: color-mix(in srgb, var(--rte-fg) 75%, transparent);
+}
+

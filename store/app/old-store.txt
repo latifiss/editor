@@ -1,0 +1,61 @@
+import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
+import { persistStore, persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
+import rootReducer, { RootState } from './rootReducer';
+import { authApi } from '../features/auth/authAPI';
+import { articleApi } from '../features/ghanascore/article/articleAPI';
+import { featureApi } from '../features/ghanascore/feature/featureAPI';
+import { afrobeatsrepArticleApi } from '../features/afrobeatsrep/article/articleAPI'; 
+import { afeatureApi } from '../features/afrobeatsrep/feature/featureAPI'; 
+import { ghanapolitanArticleApi } from '../features/ghanapolitan/articles/articleAPI'; 
+import { ghanapolitanFeatureApi } from '../features/ghanapolitan/feature/featureAPI'; 
+import { opinionApi } from '../features/ghanapolitan/opinion/opinionAPI'; 
+import { sectionApi } from '../features/ghanapolitan/section/sectionApi'; 
+
+const persistConfig = {
+  key: 'root',
+  storage,
+  whitelist: ['auth'], 
+};
+
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+export const setupStore = () => {
+  return configureStore({
+    reducer: persistedReducer,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware({
+        serializableCheck: {
+          ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+          ignoredPaths: ['auth.token'],
+        },
+      }).concat(
+        authApi.middleware,
+        articleApi.middleware,
+        featureApi.middleware,
+        afrobeatsrepArticleApi.middleware, 
+        afeatureApi.middleware, 
+        ghanapolitanArticleApi.middleware, 
+        ghanapolitanFeatureApi.middleware, 
+        opinionApi.middleware, 
+        sectionApi.middleware, 
+      ),
+    devTools: process.env.NODE_ENV !== 'production',
+  });
+};
+
+export const store = setupStore();
+export const persistor = persistStore(store);
+
+export type { RootState };
+
+export type AppStore = ReturnType<typeof setupStore>;
+export type AppDispatch = AppStore['dispatch'];
+export type AppThunk<ReturnType = void> = ThunkAction<
+  ReturnType,
+  RootState,
+  unknown,
+  Action<string>
+>;
+
+export default store;

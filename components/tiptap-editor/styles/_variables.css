@@ -1,0 +1,64 @@
+/* Colors */
+:root {
+  --rte-bg: #ffffff;
+  --rte-fg: #1f2328;
+  --rte-border: var(--rte-border);
+  --rte-primary: var(--rte-primary);
+  --rte-primary-fg: var(--rte-primary-fg);
+  --rte-secondary: var(--rte-secondary);
+  --rte-secondary-fg: var(--rte-secondary-fg);
+  --rte-accent: var(--rte-accent);
+  --rte-accent-fg: var(--rte-accent-fg);
+  --rte-muted: var(--rte-muted);
+  --rte-muted-fg: var(--rte-muted-fg);
+  --rte-tooltip: var(--rte-tooltip);
+  --rte-tooltip-fg: var(--rte-tooltip-fg);
+  --rte-bubble: var(--rte-bubble, var(--rte-bg));
+  --rte-overlay: var(--rte-overlay);
+}
+
+/* Font sizes */
+:root {
+  --text-size-xs: 0.75rem;
+  --text-size-sm: 0.875rem;
+  --text-size-base: 1rem;
+  --text-size-lg: 1.125rem;
+  --text-size-xl: 1.25rem;
+  --text-size-2xl: 1.5rem;
+  --text-lineHeight-xs: 1rem;
+  --text-lineHeight-sm: 1.25rem;
+  --text-lineHeight-base: 1.5rem;
+  --text-lineHeight-lg: 1.75rem;
+  --text-lineHeight-xl: 1.75rem;
+  --text-lineHeight-2xl: 2rem;
+}
+
+/* Radius */
+:root {
+  --rte-radius: 0.5rem;
+  --rte-radius-lg: calc(var(--rte-radius) * 1.25);
+  --rte-radius-sm: calc(var(--rte-radius) * 0.75);
+}
+
+/* Shadow */
+:root {
+  --rte-shadow-1: 0px 0px 0px 1px #d1d9e080, 0px 6px 12px -3px #25292e0a, 0px 6px 18px 0px #25292e1f;
+  --rte-shadow-2: 0px 0px 0px 1px #d1d9e0, 0px 8px 16px -4px #25292e14, 0px 4px 32px -4px #25292e14, 0px 24px 48px -12px #25292e14, 0px 48px 96px -24px #25292e14;
+  --rte-shadow-3: 0px 0px 0px 1px #d1d9e0, 0px 40px 80px 0px #25292e3d;
+}
+
+/* Editor */
+:root {
+  --rte-editor-min-height: var(--rte-editor-min-height);
+  --rte-editor-max-height: var(--rte-editor-max-height);
+  --rte-editor-max-width: 100%;
+  --rte-editor-font-size: 1rem;
+  --rte-editor-link: var(--rte-editor-link, var(--rte-primary));
+  --rte-editor-line-height: 1.75;
+  --rte-editor-selection: var(--rte-editor-selection, color-mix(in srgb, var(--rte-primary) 20%, transparent));
+  --rte-editor-code-bg: #f6f8fa;
+  --rte-editor-scrollbar: #00000040;
+  --rte-editor-font: var(--font-nunito), sans-serif;
+  --rte-editor-code-font: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+

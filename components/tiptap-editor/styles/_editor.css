@@ -1,0 +1,265 @@
+@import "./_variables.css";
+@import "./_mixins.css";
+
+/* ============================================================================ */
+/* EDITOR LAYOUT */
+/* ============================================================================ */
+
+.rte-editor {
+  all: unset;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--rte-border);
+  border-radius: var(--rte-radius);
+  background-color: var(--rte-bg);
+  font-family: var(--rte-editor-font);
+  box-shadow: var(--rte-shadow-1);
+  font-size: var(--text-size-sm);
+  line-height: var(--text-lineHeight-sm);
+}
+
+.rte-editor * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rte-editor-scrollbar) transparent;
+  scrollbar-gutter: stable;
+}
+
+.rte-editor--fullscreen {
+  --rte-editor-max-height: auto;
+  --rte-editor-min-height: auto;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.rte-editor__container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  position: relative;
+  min-height: var(--rte-editor-min-height);
+  max-height: var(--rte-editor-max-height);
+  background-color: var(--rte-bg);
+  color: var(--rte-fg);
+  font-family: var(--rte-editor-font);
+  font-size: var(--rte-editor-font-size);
+  line-height: var(--rte-editor-line-height);
+  overflow: auto;
+  cursor: text;
+}
+
+.rte-editor__container > .ProseMirror {
+  flex-grow: 1;
+  width: 100%;
+  padding-block: 2.5rem;
+  padding-inline: 12px;
+}
+
+.rte-editor__container:has(.ProseMirror-focused) {
+  border-radius: var(--rte-radius-sm);
+  box-shadow: 0 0 0 2px #00C850;
+}
+
+/* ============================================================================ */
+/* MENU & STATUS BAR */
+/* ============================================================================ */
+
+.rte-menu-bar,
+.rte-status-bar {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.125rem;
+  background-color: var(--rte-bg);
+}
+
+.rte-menu-bar {
+  border-bottom: 1px solid var(--rte-border);
+  border-top-left-radius: var(--rte-radius);
+  border-top-right-radius: var(--rte-radius);
+}
+
+.rte-status-bar {
+  border-top: 1px solid var(--rte-border);
+  border-bottom-left-radius: var(--rte-radius);
+  border-bottom-right-radius: var(--rte-radius);
+}
+
+.rte-status-bar .rte-counter {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+  padding: 0.25rem 0.5rem;
+  font-weight: 500;
+  color: var(--rte-muted-fg);
+}
+
+/* ============================================================================ */
+/* MENU BUTTON */
+/* ============================================================================ */
+
+.rte-menu__button {
+  position: relative;
+  padding-inline: 0.5rem;
+}
+
+.rte-menu__button[data-active],
+.rte-menu__button[data-active]:hover {
+  color: var(--rte-primary);
+  background-color: var(--rte-accent);
+}
+
+.rte-menu__button:has(.rte-icon-arrow) {
+  width: auto;
+  padding-inline: 0.25rem;
+}
+
+.rte-menu__button:has(.rte-icon-arrow) .rte-button__text:first-child {
+  margin-left: 0.25rem;
+}
+
+.rte-menu__button .rte-icon-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.125rem;
+}
+
+/* ============================================================================ */
+/* BUBBLE MENU */
+/* ============================================================================ */
+
+.rte-bubble-menu {
+  border-radius: var(--rte-radius);
+  background-color: var(--rte-bubble);
+  box-shadow: var(--rte-shadow-2);
+}
+
+/* ============================================================================ */
+/* LINK FORM */
+/* ============================================================================ */
+
+.rte-link__form {
+  width: 20rem;
+  padding: 1rem;
+}
+
+.rte-link__label {
+  font-weight: 600;
+}
+
+.rte-link__label:not(:first-child) {
+  margin-top: 1rem;
+}
+
+.rte-link__actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.125rem;
+}
+
+.rte-link__actions button {
+  padding-inline: 1rem;
+}
+
+/* ============================================================================ */
+/* TEXT ALTERNATIVE FORM */
+/* ============================================================================ */
+
+.rte-text-alternative__form {
+  display: flex;
+  gap: 0.5rem;
+  min-width: 22rem;
+  padding: 0.375rem 0.5rem;
+}
+
+.rte-text-alternative__form input {
+  flex: 1;
+  width: 100%;
+}
+
+/* ============================================================================ */
+/* HEADING DROPDOWN */
+/* ============================================================================ */
+
+.rte-heading-dropdown {
+  min-width: 10rem;
+}
+
+.rte-heading-dropdown [data-heading="p"] {
+  font-size: var(--text-size-sm);
+  line-height: var(--text-lineHeight-sm);
+}
+
+.rte-heading-dropdown [data-heading="h1"] {
+  font-size: var(--text-size-2xl);
+  line-height: var(--text-lineHeight-2xl);
+  font-weight: bold;
+}
+
+.rte-heading-dropdown [data-heading="h2"] {
+  font-size: var(--text-size-xl);
+  line-height: var(--text-lineHeight-xl);
+  font-weight: bold;
+}
+
+.rte-heading-dropdown [data-heading="h3"] {
+  font-size: var(--text-size-lg);
+  line-height: var(--text-lineHeight-lg);
+  font-weight: bold;
+}
+
+.rte-heading-dropdown [data-heading="h4"] {
+  font-size: var(--text-size-base);
+  line-height: var(--text-lineHeight-base);
+  font-weight: bold;
+}
+
+/* ============================================================================ */
+/* CODE LANGUAGE DROPDOWN */
+/* ============================================================================ */
+
+.rte-code-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.rte-code-dropdown .code-search {
+  height: 2.25rem;
+}
+
+.rte-code-dropdown .code-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rte-editor-scrollbar) transparent;
+  scrollbar-gutter: stable;
+}
+
+.rte-code-dropdown .code-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.375rem 0.375rem 1.75rem;
+  border-radius: var(--rte-radius-sm);
+  cursor: pointer;
+  font-size: var(--text-size-sm);
+  line-height: var(--text-lineHeight-sm);
+}
+
+.rte-code-dropdown .code-item:hover {
+  background-color: var(--rte-accent);
+}
+
+.rte-code-dropdown .code-item__indicator {
+  position: absolute;
+  left: 0.375rem;
+}
+
