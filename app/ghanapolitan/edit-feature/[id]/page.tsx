@@ -29,28 +29,20 @@ const decodeHtmlEntities = (html: string): string => {
   return textarea.value;
 };
 
-// Ghanapolitan specific categories
 const ghanapolitanCategories = [
   'Politics',
+  'Local',
   'Business',
-  'Culture',
-  'Lifestyle',
+  'Sports',
   'Entertainment',
+  'Africa',
   'Technology',
+  'World',
   'Health',
   'Education',
-  'Sports',
-  'Travel',
-  'Food',
-  'Fashion',
-  'Arts',
-  'History',
-  'Environment',
-  'Opinion',
-  'Other'
+  'Lifestyle',
 ];
 
-// Subcategories for Ghanapolitan (you can expand this)
 const ghanapolitanSubcategories: Record<string, string[]> = {
   'Politics': ['Government', 'Elections', 'Policy', 'International Relations', 'Local Government'],
   'Business': ['Economy', 'Finance', 'Startups', 'Agriculture', 'Trade', 'Investment'],
@@ -76,21 +68,6 @@ interface FormErrors {
   creator?: string;
   category?: string;
   content?: string;
-}
-
-interface Feature {
-  _id: string;
-  title: string;
-  description: string;
-  label?: string;
-  creator: string;
-  category: string;
-  subcategory?: string[];
-  tags?: string[];
-  image_url?: string;
-  content: string;
-  published_at: string;
-  slug: string;
 }
 
 export default function EditGhanapolitanFeaturePage() {
@@ -157,9 +134,7 @@ export default function EditGhanapolitanFeaturePage() {
         try {
           if (typeof editorRef.current?.setContent === 'function') {
             const success = editorRef.current.setContent(featureData.data.content);
-            if (success) {
-              // Content set successfully
-            } else {
+            if (!success) {
               setTimeout(() => setContentWithRetry(retryCount + 1), 300);
             }
           } else if (editorRef.current && (editorRef.current as any).editor) {
@@ -223,9 +198,7 @@ export default function EditGhanapolitanFeaturePage() {
             const decodedContent = decodeHtmlEntities(feature.content);
             try {
               editorRef.current.setContent(decodedContent);
-            } catch (error) {
-              console.error('Error setting content:', error);
-            }
+            } catch (error) {}
           }
         }, 500);
       }
@@ -272,13 +245,11 @@ export default function EditGhanapolitanFeaturePage() {
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         notify('Please upload an image file', 'error');
         return;
       }
       
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         notify('Image size should be less than 5MB', 'error');
         return;
@@ -481,21 +452,6 @@ export default function EditGhanapolitanFeaturePage() {
     ...subcategories.map((sub) => ({ id: sub, label: sub })),
   ];
 
-  const testDataLoading = () => {
-    if (featureData?.data) {
-      const feature = featureData.data;
-      setTitle(feature.title || '');
-      setDescription(feature.description || '');
-      if (feature.category) {
-        setCategory({ id: feature.category, label: feature.category });
-      }
-      if (feature.tags) {
-        setTags(Array.isArray(feature.tags) ? feature.tags : []);
-      }
-      notify('Data manually set', 'success');
-    }
-  };
-
   if (isLoadingFeature && !featureData?.data) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -555,10 +511,8 @@ export default function EditGhanapolitanFeaturePage() {
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="grid grid-cols-1 lg:grid-cols-[1.4fr_0.6fr] gap-6 lg:gap-8">
-          {/* Left Column - Main Content */}
           <div className="flex flex-col items-center w-full bg-transparent border border-[#e0e0e0] dark:border-neutral-800 rounded-lg p-4 md:p-6">
             <div className="w-full space-y-6">
-              {/* Title */}
               <div className="space-y-2">
                 <label htmlFor="title" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                   Title *
@@ -581,7 +535,6 @@ export default function EditGhanapolitanFeaturePage() {
                 )}
               </div>
 
-              {/* Label */}
               <div className="space-y-2">
                 <label htmlFor="label" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                   Label (Optional)
@@ -597,7 +550,6 @@ export default function EditGhanapolitanFeaturePage() {
                 </div>
               </div>
 
-              {/* Description */}
               <div className="space-y-2">
                 <label htmlFor="description" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                   Description *
@@ -620,7 +572,6 @@ export default function EditGhanapolitanFeaturePage() {
                 )}
               </div>
 
-              {/* Content Editor */}
               <div className="space-y-2">
                 <label htmlFor="content" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                   Content *
@@ -646,9 +597,7 @@ export default function EditGhanapolitanFeaturePage() {
             </div>
           </div>
 
-          {/* Right Column - Sidebar */}
           <div className="flex flex-col items-center w-full bg-transparent border border-[#e0e0e0] dark:border-neutral-800 rounded-lg p-4 md:p-6 space-y-6">
-            {/* Thumbnail */}
             <div className="w-full space-y-2">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Feature thumbnail (Optional)
@@ -685,7 +634,6 @@ export default function EditGhanapolitanFeaturePage() {
               )}
             </div>
 
-            {/* Category */}
             <div className="w-full space-y-2">
               <label htmlFor="category" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Feature category *
@@ -708,7 +656,6 @@ export default function EditGhanapolitanFeaturePage() {
               )}
             </div>
 
-            {/* Subcategory */}
             <div className="w-full space-y-2">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Subcategory (Optional)
@@ -729,7 +676,6 @@ export default function EditGhanapolitanFeaturePage() {
               )}
             </div>
 
-            {/* Tags */}
             <div className="w-full space-y-2">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Tags (Optional)
@@ -765,7 +711,6 @@ export default function EditGhanapolitanFeaturePage() {
               )}
             </div>
 
-            {/* Author Info */}
             <div className="w-full p-4 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg">
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
                 Author Information
@@ -783,7 +728,6 @@ export default function EditGhanapolitanFeaturePage() {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex gap-3 w-full mt-4">
               <Button
                 type="button"

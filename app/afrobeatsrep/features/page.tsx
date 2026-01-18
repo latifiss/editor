@@ -1,18 +1,21 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import {
   useGetFeaturesQuery,
   useDeleteFeatureMutation,
+  useSearchFeaturesQuery,
 } from '@/store/features/afrobeatsrep/feature/featureAPI';
 import { useNotify } from '@/hooks/useNotify';
 import { NotificationContainer } from '@/components/notificationContainer';
 import Button from '@/components/ui/buttons/button';
 import { ClipLoader } from 'react-spinners';
 import { selectCurrentAdmin } from '@/store/features/auth/authSlice';
-import { Pencil, Trash2, Eye, Plus } from 'lucide-react';
+import { Pencil, Trash2, Eye, Plus, Search, XCircle, Filter } from 'lucide-react';
+import debounce from 'lodash/debounce';
+import { SearchInput } from '@/components/ui/inputs/searchInput';
 
 interface Feature {
   _id: string;
@@ -33,13 +36,50 @@ export default function FeaturesPage() {
 
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  
+  const debounceSearch = useCallback(
+    debounce((term: string) => {
+      setDebouncedSearchTerm(term);
+      setPage(1);
+    }, 500),
+    []
+  );
 
+  useEffect(() => {
+    debounceSearch(searchTerm);
+    return () => {
+      debounceSearch.cancel();
+    };
+  }, [searchTerm, debounceSearch]);
+
+  const { 
+    data: searchData, 
+    isLoading: isSearching,
+    error: searchError,
+    isFetching: isSearchFetching
+  } = useSearchFeaturesQuery(
+    debouncedSearchTerm ? { 
+      query: debouncedSearchTerm, 
+      page, 
+      limit 
+    } : { query: '', page: 1, limit: 0 },
+    { 
+      skip: !debouncedSearchTerm,
+      refetchOnMountOrArgChange: true 
+    }
+  );
+  
   const {
     data: featuresData,
-    isLoading,
-    error,
-    refetch,
-  } = useGetFeaturesQuery({ page, limit });
+    isLoading: isFeaturesLoading,
+    error: featuresError,
+    refetch: refetchFeatures,
+    isFetching: isFeaturesFetching
+  } = useGetFeaturesQuery({ page, limit }, {
+    skip: !!debouncedSearchTerm
+  });
 
   const [deleteFeature, { isLoading: isDeleting }] = useDeleteFeatureMutation();
 
@@ -52,7 +92,7 @@ export default function FeaturesPage() {
     try {
       await deleteFeature(id).unwrap();
       notify('Feature deleted successfully', 'success');
-      refetch();
+      refetchFeatures();
     } catch (err: any) {
       notify(err?.data?.message || 'Failed to delete feature', 'error');
     }
@@ -69,14 +109,26 @@ export default function FeaturesPage() {
       day: 'numeric',
     });
 
-  const totalPages = featuresData?.totalPages || 1;
+  const clearSearch = () => {
+    setSearchTerm('');
+    setDebouncedSearchTerm('');
+    setPage(1);
+  };
+
+  const isLoading = debouncedSearchTerm ? isSearching : isFeaturesLoading;
+  const isFetching = debouncedSearchTerm ? isSearchFetching : isFeaturesFetching;
+  const error = debouncedSearchTerm ? searchError : featuresError;
+  const displayData = debouncedSearchTerm ? searchData : featuresData;
+  const totalPages = displayData?.totalPages || 1;
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <ClipLoader size={40} color="#10B981" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading features...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">
+            {debouncedSearchTerm ? 'Searching features...' : 'Loading features...'}
+          </p>
         </div>
       </div>
     );
@@ -86,10 +138,17 @@ export default function FeaturesPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <h2 className="text-xl font-bold text-red-600 dark:text-red-400">Error loading features</h2>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Please try again later.</p>
-          <Button onClick={() => refetch()} className="mt-4">
-            Retry
+          <h2 className="text-xl font-bold text-red-600 dark:text-red-400">
+            {debouncedSearchTerm ? 'Error searching features' : 'Error loading features'}
+          </h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            {error?.data?.message || 'Please try again later.'}
+          </p>
+          <Button 
+            onClick={() => debouncedSearchTerm ? clearSearch() : refetchFeatures()} 
+            className="mt-4"
+          >
+            {debouncedSearchTerm ? 'Clear Search' : 'Retry'}
           </Button>
         </div>
       </div>
@@ -99,21 +158,64 @@ export default function FeaturesPage() {
   return (
     <div className="min-h-screen p-4 md:p-6 bg-transparent">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Features</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Total: {featuresData?.total || 0} features
+              {debouncedSearchTerm ? (
+                <>
+                  Search results: {displayData?.total || 0} features found for "{debouncedSearchTerm}"
+                </>
+              ) : (
+                <>Total: {displayData?.total || 0} features</>
+              )}
             </p>
           </div>
-          <Button onClick={() => router.push('/afrobeatsrep/create-feature')} className="flex items-center gap-2">
+          <Button 
+            onClick={() => router.push('/afrobeatsrep/create-feature')} 
+            className="flex items-center gap-2 flex-1 md:flex-none"
+          >
             <Plus size={18} />
             Create Feature
           </Button>
         </div>
 
-        {featuresData?.data?.features?.length === 0 ? (
-          <div className="text-center py-12">
+        <div className="bg-white dark:bg-neutral-900 border border-[#e0e0e0] dark:border-neutral-800 rounded-lg shadow-sm p-4 mb-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <SearchInput
+                type="text"
+                placeholder="Search features by title, description, or content..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                }}
+                icon={Search}
+              />
+            </div>
+            
+            {debouncedSearchTerm && (
+              <Button
+                onClick={clearSearch}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <XCircle size={16} />
+                Clear Search
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {isFetching && !isLoading && (
+          <div className="flex justify-center mb-4">
+            <ClipLoader size={20} color="#10B981" />
+          </div>
+        )}
+
+        {displayData?.data?.features?.length === 0 ? (
+          <div className="text-center py-12 bg-white dark:bg-neutral-900 border border-[#e0e0e0] dark:border-neutral-800 rounded-lg shadow-sm">
             <div className="text-gray-400 dark:text-gray-500 mb-4">
               <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -124,12 +226,35 @@ export default function FeaturesPage() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No features yet</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">Create your first feature to get started</p>
-            <Button onClick={() => router.push('/afrobeatsrep/create-feature')} className="flex items-center gap-2 mx-auto">
-              <Plus size={18} />
-              Create Feature
-            </Button>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+              {debouncedSearchTerm 
+                ? `No features found for "${debouncedSearchTerm}"`
+                : 'No features yet'
+              }
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              {debouncedSearchTerm
+                ? 'Try a different search term'
+                : 'Create your first feature to get started'
+              }
+            </p>
+            {debouncedSearchTerm ? (
+              <Button
+                onClick={clearSearch}
+                className="flex items-center gap-2 mx-auto"
+              >
+                <XCircle size={18} />
+                Clear Search
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => router.push('/afrobeatsrep/create-feature')} 
+                className="flex items-center gap-2 mx-auto"
+              >
+                <Plus size={18} />
+                Create Feature
+              </Button>
+            )}
           </div>
         ) : (
           <>
@@ -146,7 +271,7 @@ export default function FeaturesPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#e0e0e0] dark:divide-neutral-800">
-                    {featuresData?.data?.features?.map((feature: Feature) => (
+                    {displayData?.data?.features?.map((feature: Feature) => (
                       <tr key={feature._id} className="hover:bg-gray-50 dark:hover:bg-neutral-800/50">
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
@@ -237,4 +362,3 @@ export default function FeaturesPage() {
     </div>
   );
 }
-

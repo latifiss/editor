@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import React, { useRef, useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { useSelector } from 'react-redux';
@@ -37,18 +38,7 @@ const categories = [
   'Boxing',
   'Motorsport',
   'Tennis',
-  'Armwrestling',
-  'Table Tennis',
-  'Golf',
-  'Hockey',
-  'Rugby',
-  'Cricket',
-  'Volleyball',
-  'Handball',
-  'American Sports',
-  'Swimming',
-  'Mixed Martial Arts',
-  'Other'
+  'OtherSports',
 ];
 
 interface FormErrors {
@@ -461,12 +451,11 @@ export default function EditFeaturePage() {
         <div className="text-center">
           <h2 className="text-xl font-bold text-red-600 dark:text-red-400">Feature not found</h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">The feature you're trying to edit doesn't exist.</p>
-          <Button
-            onClick={() => router.push('/ghanascore/features')}
-            className="mt-4"
-          >
-            Back to Features
-          </Button>
+          <Link href="/ghanascore/features">
+            <Button className="mt-4">
+              Back to Features
+            </Button>
+          </Link>
         </div>
       </div>
     );
@@ -724,14 +713,15 @@ export default function EditFeaturePage() {
             </div>
 
             <div className="flex gap-3 w-full mt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.push('/ghanascore/features')}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
+              <Link href="/ghanascore/features" className="flex-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                >
+                  Cancel
+                </Button>
+              </Link>
               <Button
                 type="submit"
                 disabled={isUpdating || !admin || isLoadingFeature}

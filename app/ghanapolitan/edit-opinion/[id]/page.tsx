@@ -23,18 +23,16 @@ const TiptapEditorDynamic = dynamic(() => Promise.resolve(TiptapEditor), { ssr: 
 
 const opinionCategories = [
   'Politics',
+  'Local',
   'Business',
-  'Culture',
-  'Education',
-  'Health',
-  'Technology',
-  'Environment',
   'Sports',
   'Entertainment',
+  'Africa',
+  'Technology',
+  'World',
+  'Health',
+  'Education',
   'Lifestyle',
-  'International',
-  'Editorial',
-  'Opinion'
 ];
 
 interface FormErrors {

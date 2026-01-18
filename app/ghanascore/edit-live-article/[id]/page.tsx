@@ -1,7 +1,7 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { useSelector } from 'react-redux';
@@ -16,15 +16,11 @@ import { TextInput } from '@/components/ui/inputs/textInput';
 import { SelectDropdown } from '@/components/ui/inputs/dropdown';
 import Button from '@/components/ui/buttons/button';
 import { ClipLoader } from 'react-spinners';
-import TiptapEditor, { type TiptapEditorRef } from '@/components/tiptap-editor';
 import { categorySubcategories } from '@/categorySubcategories';
 import { selectCurrentAdmin } from '@/store/features/auth/authSlice';
 import { LiveArticleContent } from '@/store/features/ghanascore/articleTypes';
 import { v4 as uuidv4 } from 'uuid';
 
-const TiptapEditorDynamic = dynamic(() => Promise.resolve(TiptapEditor), { ssr: false });
-
-// Categories - you can replace this with an API call or move to a constants file
 const categories = [
   'Football',
   'Basketball',
@@ -32,18 +28,7 @@ const categories = [
   'Boxing',
   'Motorsport',
   'Tennis',
-  'Armwrestling',
-  'Table Tennis',
-  'Golf',
-  'Hockey',
-  'Rugby',
-  'Cricket',
-  'Volleyball',
-  'Handball',
-  'American Sports',
-  'Swimming',
-  'Mixed Martial Arts',
-  'Other'
+  'OtherSports',
 ];
 
 interface FormErrors {
@@ -71,12 +56,10 @@ export default function EditLiveArticlePage() {
   const { notify } = useNotify();
   const admin = useSelector(selectCurrentAdmin);
 
-  // Use article API
-  const { data: articleData, isLoading: isLoadingArticle, error: articleError, refetch } = 
+  const { data: articleData, isLoading: isLoadingArticle, error: articleError } = 
     useGetArticleByIdQuery(articleId, { skip: !articleId });
   const [updateArticle, { isLoading: isUpdating }] = useUpdateArticleMutation();
 
-  // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [label, setLabel] = useState('');
@@ -92,14 +75,13 @@ export default function EditLiveArticlePage() {
   const [isBreaking, setIsBreaking] = useState(false);
   const [isHeadline, setIsHeadline] = useState(false);
   const [isTopstory, setIsTopstory] = useState(false);
-  const [isLive, setIsLive] = useState(true); // Always true for live articles
+  const [isLive] = useState(true);
   const [hasLivescore, setHasLivescore] = useState(false);
   const [livescoreTag, setLivescoreTag] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasErrorBeenHandled, setHasErrorBeenHandled] = useState(false);
 
-  // Live updates state
   const [liveUpdates, setLiveUpdates] = useState<LiveUpdateForm[]>([]);
   const [newUpdate, setNewUpdate] = useState<Omit<LiveUpdateForm, 'id' | 'content_published_at'>>({
     content_title: '',
@@ -110,33 +92,10 @@ export default function EditLiveArticlePage() {
   const [updateImage, setUpdateImage] = useState<File | null>(null);
   const [updateImagePreview, setUpdateImagePreview] = useState<string | null>(null);
 
-  // Pre-fill form with article data when loaded
   useEffect(() => {
-    console.log('=== Loading Live Article Data ===');
-    
     if (articleData && articleData.data && !isInitialized) {
       const article = articleData.data;
       
-      const contentPreview = (() => {
-        if (!article.content) return 'null';
-        if (typeof article.content === 'string') {
-          return article.content.substring(0, 100) + '...';
-        }
-        try {
-          return JSON.stringify(article.content).substring(0, 100) + '...';
-        } catch {
-          return '[unserializable content]';
-        }
-      })();
-
-      console.log('✅ Live Article loaded successfully:', {
-        title: article.title,
-        isLive: article.isLive,
-        contentType: typeof article.content,
-        contentValue: contentPreview
-      });
-      
-      // Set basic fields
       setTitle(article.title || '');
       setDescription(article.description || '');
       setLabel(article.label || '');
@@ -165,7 +124,7 @@ export default function EditLiveArticlePage() {
       setIsBreaking(!!article.isBreaking);
       setIsHeadline(!!article.isHeadline);
       setIsTopstory(!!article.isTopstory);
-      setIsLive(true); // Force live for live article editor
+      setIsLive(true);
       setHasLivescore(!!article.hasLivescore);
       
       if (article.hasLivescore && article.livescoreTag) {
@@ -179,24 +138,19 @@ export default function EditLiveArticlePage() {
         setThumbnailPreview(article.image_url);
       }
       
-      // Handle live article content - FIXED PARSING
       let parsedContent: LiveArticleContent[] = [];
       
       try {
         if (article.content) {
           if (Array.isArray(article.content)) {
-            // Already an array (shouldn't happen based on your response, but just in case)
             parsedContent = article.content;
           } else if (typeof article.content === 'string') {
-            // Try to parse as JSON string (this is what your backend returns)
             const trimmedContent = article.content.trim();
             if (trimmedContent.startsWith('[') && trimmedContent.endsWith(']')) {
               parsedContent = JSON.parse(trimmedContent);
             } else if (trimmedContent.startsWith('{')) {
-              // Single object wrapped in array
               parsedContent = [JSON.parse(trimmedContent)];
             } else {
-              // Regular string content - convert to live update
               parsedContent = [{
                 content_title: article.title || 'Initial Update',
                 content_description: article.description || '',
@@ -208,8 +162,6 @@ export default function EditLiveArticlePage() {
           }
         }
       } catch (error) {
-        console.error('Error parsing content:', error);
-        // Fallback: Convert string content to live update
         if (typeof article.content === 'string') {
           parsedContent = [{
             content_title: article.title || 'Initial Update',
@@ -221,12 +173,9 @@ export default function EditLiveArticlePage() {
         }
       }
       
-      // Also check keyEvents
       if (article.keyEvents && Array.isArray(article.keyEvents)) {
         parsedContent = [...parsedContent, ...article.keyEvents];
       }
-      
-      // Convert to LiveUpdateForm with unique IDs
       const updates: LiveUpdateForm[] = parsedContent.map((content: any, index) => ({
         id: uuidv4(),
         content_title: content.content_title || `Update ${index + 1}`,
@@ -239,11 +188,9 @@ export default function EditLiveArticlePage() {
       
       setLiveUpdates(updates);
       setIsInitialized(true);
-      console.log(`✅ Live Article form initialized successfully with ${updates.length} updates`);
     }
   }, [articleData, admin, isInitialized]);
 
-  // Update subcategories when category changes
   useEffect(() => {
     if (category) {
       const categoryName = category.label;
@@ -254,10 +201,8 @@ export default function EditLiveArticlePage() {
     }
   }, [category]);
 
-  // Handle loading and error states
   useEffect(() => {
     if (articleError && !hasErrorBeenHandled && articleId) {
-      console.error('Article loading error:', articleError);
       notify('Failed to load article. Please try again.', 'error');
       setHasErrorBeenHandled(true);
       
@@ -295,7 +240,6 @@ export default function EditLiveArticlePage() {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
-  // Live update handlers
   const handleAddUpdate = () => {
     if (!newUpdate.content_title.trim() || !newUpdate.content_detail.trim()) {
       notify('Please provide a title and content for the update', 'error');
@@ -310,7 +254,6 @@ export default function EditLiveArticlePage() {
 
     setLiveUpdates([...liveUpdates, newLiveUpdate]);
     
-    // Reset form
     setNewUpdate({
       content_title: '',
       content_description: '',
@@ -423,17 +366,14 @@ export default function EditLiveArticlePage() {
     }
 
     const liveContent = prepareLiveContent();
-    console.log('Live content prepared:', liveContent);
 
     const payload = new FormData();
     payload.append('title', title.trim());
     payload.append('description', description.trim());
     payload.append('category', category!.label.trim());
     
-    // Send JSON string (backend should parse this into an array)
     payload.append('content', JSON.stringify(liveContent));
     
-    // Also send keyEvents separately if needed
     const keyEvents = liveContent.filter(update => update.isKey);
     if (keyEvents.length > 0) {
       payload.append('keyEvents', JSON.stringify(keyEvents));
@@ -457,9 +397,8 @@ export default function EditLiveArticlePage() {
     payload.append('isBreaking', String(isBreaking));
     payload.append('isHeadline', String(isHeadline));
     payload.append('isTopstory', String(isTopstory));
-    payload.append('isLive', 'true'); // Always true for live articles
+    payload.append('isLive', 'true');
     
-    // Handle livescore
     payload.append('hasLivescore', String(hasLivescore));
     if (hasLivescore && livescoreTag.trim()) {
       payload.append('livescoreTag', livescoreTag.trim());
@@ -471,23 +410,11 @@ export default function EditLiveArticlePage() {
       payload.append('image', thumbnail);
     }
 
-    // Debug the payload
-    console.log('Submitting FormData:');
-    for (const [key, value] of payload.entries()) {
-      if (key === 'content') {
-        console.log(`${key}:`, typeof value, 'length:', value.toString().length);
-      } else {
-        console.log(`${key}:`, value);
-      }
-    }
-
     try {
-      const result = await updateArticle({
+      await updateArticle({
         id: articleId,
         formData: payload
       }).unwrap();
-      
-      console.log('✅ Live article update successful:', result);
       
       notify('Live article updated successfully', 'success');
       
@@ -496,8 +423,6 @@ export default function EditLiveArticlePage() {
       }, 1500);
       
     } catch (err: any) {
-      console.error('🚨 Update error:', err);
-      
       let errorMessage = 'Failed to update live article. Please try again.';
       
       if (err?.data?.message) {
@@ -565,7 +490,6 @@ export default function EditLiveArticlePage() {
     ...subcategories.map((sub) => ({ id: sub, label: sub })),
   ];
 
-  // Show loading state
   if (isLoadingArticle && !articleData?.data) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -577,19 +501,17 @@ export default function EditLiveArticlePage() {
     );
   }
 
-  // Show error state if article not found
   if (articleError && hasErrorBeenHandled) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h2 className="text-xl font-bold text-red-600 dark:text-red-400">Live article not found</h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">The live article you're trying to edit doesn't exist.</p>
-          <Button
-            onClick={() => router.push('/ghanascore/articles')}
-            className="mt-4"
-          >
-            Back to Articles
-          </Button>
+          <Link href="/ghanascore/articles">
+            <Button className="mt-4">
+              Back to Articles
+            </Button>
+          </Link>
         </div>
       </div>
     );
@@ -616,10 +538,8 @@ export default function EditLiveArticlePage() {
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="grid grid-cols-1 lg:grid-cols-[1.4fr_0.6fr] gap-6 lg:gap-8">
-          {/* Left Column - Live Updates */}
           <div className="flex flex-col items-center w-full bg-transparent border border-[#e0e0e0] dark:border-neutral-800 rounded-lg p-4 md:p-6">
             <div className="w-full space-y-6">
-              {/* Live Updates List */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">
@@ -628,7 +548,6 @@ export default function EditLiveArticlePage() {
                   <Button
                     type="button"
                     onClick={() => {
-                      // Scroll to add update form
                       document.getElementById('add-update-form')?.scrollIntoView({ behavior: 'smooth' });
                     }}
                     size="sm"
@@ -718,7 +637,6 @@ export default function EditLiveArticlePage() {
                 )}
               </div>
 
-              {/* Add New Update Form */}
               <div id="add-update-form" className="space-y-4 p-4 border border-gray-200 dark:border-neutral-700 rounded-lg">
                 <h4 className="font-bold text-gray-800 dark:text-gray-200">Add New Update</h4>
                 
@@ -814,9 +732,7 @@ export default function EditLiveArticlePage() {
             </div>
           </div>
 
-          {/* Right Column - Article Metadata */}
           <div className="flex flex-col items-center w-full bg-transparent border border-[#e0e0e0] dark:border-neutral-800 rounded-lg p-4 md:p-6 space-y-6">
-            {/* Article Title */}
             <div className="w-full space-y-2">
               <label htmlFor="title" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Article Title *
@@ -838,7 +754,6 @@ export default function EditLiveArticlePage() {
               )}
             </div>
 
-            {/* Description */}
             <div className="w-full space-y-2">
               <label htmlFor="description" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Article Description *
@@ -860,7 +775,6 @@ export default function EditLiveArticlePage() {
               )}
             </div>
 
-            {/* Thumbnail */}
             <div className="w-full space-y-2">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Featured Image (Optional)
@@ -889,7 +803,6 @@ export default function EditLiveArticlePage() {
               </div>
             </div>
 
-            {/* Category */}
             <div className="w-full space-y-2">
               <label htmlFor="category" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Category *
@@ -911,7 +824,6 @@ export default function EditLiveArticlePage() {
               )}
             </div>
 
-            {/* Livescore Section */}
             <div className="w-full space-y-4 p-4 border border-gray-200 dark:border-neutral-700 rounded-lg">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -949,7 +861,6 @@ export default function EditLiveArticlePage() {
               )}
             </div>
 
-            {/* Checkboxes */}
             <div className="w-full space-y-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -988,7 +899,6 @@ export default function EditLiveArticlePage() {
               </label>
             </div>
 
-            {/* Author Info */}
             <div className="w-full p-4 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg">
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
                 Author Information
@@ -1003,7 +913,6 @@ export default function EditLiveArticlePage() {
               </div>
             </div>
 
-            {/* Save Button */}
             <div className="w-full">
               <Button
                 type="submit"

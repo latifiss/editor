@@ -16,7 +16,6 @@ import { Textarea } from "@/components/ui/inputs/textarea";
 import { TextInput } from "@/components/ui/inputs/textInput";
 import LogoSelector from "@/components/ui/logoSelector";
 import IconTabsMobile from "@/components/ui/menutab";
-import MenuTabButton from "@/components/ui/menutab";
 import Sticker from "@/components/ui/sticker";
 import IconTabs from "@/components/ui/tabview";
 import MenuTabs from "@/components/ui/tabviewMobile";
@@ -35,7 +34,7 @@ export default function Home() {
 
         <LogoSelector 
           defaultLogo="ghanascore"
-          onLogoChange={(logo) => console.log('Selected:', logo.name)}
+          onLogoChange={() => {}}
           className="my-4"
         />
         
@@ -59,7 +58,7 @@ export default function Home() {
     { id: 3, label: "Option 3" },
   ]}
   placeholder="Choose an option"
-  onChange={(opt) => console.log("Selected:", opt)}
+  onChange={() => {}}
 />
 
 

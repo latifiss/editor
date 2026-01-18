@@ -66,7 +66,8 @@ export const ghanapolitanArticleApi = createApi({
     'SectionBySlug',
     'ArticleFeed',
     'ArticleFeedByCategory',
-    'Comments'
+    'Comments',
+    'Status' // Added for status-based queries
   ],
   endpoints: (builder) => ({
     getArticles: builder.query<ArticlesResponse, PaginationParams>({
@@ -107,6 +108,51 @@ export const ghanapolitanArticleApi = createApi({
           }
         } catch (error: any) {
           dispatch(setError(error?.data?.message || 'Failed to fetch articles'));
+        } finally {
+          dispatch(setLoading(false));
+        }
+      },
+    }),
+    // Add the new getArticlesByStatus endpoint here
+    getArticlesByStatus: builder.query<ArticlesResponse, { 
+      status: string; 
+      page?: number; 
+      limit?: number;
+      category?: string;
+      has_section?: boolean;
+      section_id?: string;
+      section_slug?: string;
+    }>({
+      query: ({ status, page = 1, limit = 10, category, has_section, section_id, section_slug }) => {
+        const params = new URLSearchParams();
+        params.append('page', page.toString());
+        params.append('limit', limit.toString());
+        if (category) params.append('category', category);
+        if (has_section !== undefined) params.append('has_section', has_section.toString());
+        if (section_id) params.append('section_id', section_id);
+        if (section_slug) params.append('section_slug', section_slug);
+        
+        return `/status/${status}?${params.toString()}`;
+      },
+      providesTags: (result, error, { status }) => [
+        { type: 'Status', id: status },
+        { type: 'Articles', id: 'LIST' }
+      ],
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        dispatch(setLoading(true));
+        try {
+          const { data } = await queryFulfilled;
+          if (data.status === 'success') {
+            dispatch(setArticles({
+              articles: data.data.articles,
+              total: data.total,
+              totalPages: data.totalPages,
+              currentPage: data.currentPage,
+              limit: 10,
+            }));
+          }
+        } catch (error: any) {
+          dispatch(setError(error?.data?.message || 'Failed to fetch articles by status'));
         } finally {
           dispatch(setLoading(false));
         }
@@ -179,6 +225,7 @@ export const ghanapolitanArticleApi = createApi({
         { type: 'SectionBySlug', id: 'LIST' },
         { type: 'ArticleFeed', id: 'LIST' },
         { type: 'ArticleFeedByCategory', id: 'LIST' },
+        { type: 'Status', id: 'LIST' }, // Added to invalidate status cache
       ],
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         dispatch(setLoading(true));
@@ -211,6 +258,7 @@ export const ghanapolitanArticleApi = createApi({
         { type: 'SectionBySlug', id: 'LIST' },
         { type: 'ArticleFeed', id: 'LIST' },
         { type: 'ArticleFeedByCategory', id: 'LIST' },
+        { type: 'Status', id: 'LIST' }, // Added to invalidate status cache
       ],
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         dispatch(setLoading(true));
@@ -241,6 +289,7 @@ export const ghanapolitanArticleApi = createApi({
         { type: 'SectionBySlug', id: 'LIST' },
         { type: 'ArticleFeed', id: 'LIST' },
         { type: 'ArticleFeedByCategory', id: 'LIST' },
+        { type: 'Status', id: 'LIST' }, // Added to invalidate status cache
       ],
       async onQueryStarted(id, { dispatch, queryFulfilled }) {
         dispatch(setLoading(true));
@@ -507,6 +556,7 @@ export const ghanapolitanArticleApi = createApi({
         { type: 'SectionBySlug', id: 'LIST' },
         { type: 'ArticleFeed', id: 'LIST' },
         { type: 'ArticleFeedByCategory', id: 'LIST' },
+        { type: 'Status', id: 'LIST' }, // Added to invalidate status cache
       ],
     }),
     removeArticleFromSection: builder.mutation<ArticleResponse, string>({
@@ -521,6 +571,7 @@ export const ghanapolitanArticleApi = createApi({
         { type: 'SectionBySlug', id: 'LIST' },
         { type: 'ArticleFeed', id: 'LIST' },
         { type: 'ArticleFeedByCategory', id: 'LIST' },
+        { type: 'Status', id: 'LIST' }, // Added to invalidate status cache
       ],
     }),
     getHeadline: builder.query<HeadlineResponse, void>({
@@ -800,6 +851,7 @@ export const ghanapolitanArticleApi = createApi({
 
 export const {
   useGetArticlesQuery,
+  useGetArticlesByStatusQuery, 
   useGetArticleBySlugQuery,
   useGetArticleByIdQuery,
   useCreateArticleMutation,

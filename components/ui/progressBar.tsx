@@ -52,7 +52,7 @@ export default function ProgressBar() {
       }
       
       #nprogress .bar {
-        background: var(--red);
+        background: #23c55e;
         position: fixed;
         z-index: 1031;
         top: 0;
@@ -67,7 +67,7 @@ export default function ProgressBar() {
         right: 0px;
         width: 100px;
         height: 100%;
-        box-shadow: 0 0 10px var(--primary-main), 0 0 5px var(--primary-main);
+        box-shadow: 0 0 10px #23c55e, 0 0 5px #23c55e;
         opacity: 1.0;
         transform: rotate(3deg) translate(0px, -4px);
       }

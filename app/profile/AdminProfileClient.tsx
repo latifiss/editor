@@ -27,53 +27,46 @@ import { ClipLoader } from "react-spinners";
 import { PencilIcon, KeyIcon, ArrowRightOnRectangleIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 
 interface AdminProfileClientProps {
-  initialAdmin: Admin;
+  initialAdmin?: Admin | null;
 }
 
-export default function AdminProfileClient({ initialAdmin }: AdminProfileClientProps) {
+export default function AdminProfileClient({ initialAdmin = null }: AdminProfileClientProps) {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  
-  // Redux state
+
   const admin = useSelector(selectCurrentAdmin);
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const isInitialized = useSelector(selectIsInitialized);
-  
-  // RTK Query hooks
+
   const { data: profileData, isLoading: isLoadingProfile, refetch } = useGetProfileQuery();
   const [updateProfileMutation, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
   const [changePasswordMutation, { isLoading: isChangingPassword }] = useChangePasswordMutation();
   const [logout, { isLoading: isLoggingOut }] = useAdminLogoutMutation();
-  
-  // Local state
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Initialize Redux with server data on mount
   useEffect(() => {
     if (!isInitialized) {
-      // Dispatch action to set initial admin data from server
-      dispatch(updateProfileSuccess(initialAdmin));
-      // Initialize auth state
+      if (initialAdmin) {
+        dispatch(updateProfileSuccess(initialAdmin));
+      }
       dispatch(initializeAuth());
     }
   }, [dispatch, initialAdmin, isInitialized]);
 
-  // Get the current admin data (prefers RTK Query data, falls back to initial data)
   const currentAdmin = profileData?.data || admin || initialAdmin;
 
   const handleLogout = async () => {
     try {
       await logout().unwrap();
-      // Clear cookies on client side
       document.cookie = "admin_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       document.cookie = "admin_auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       document.cookie = "admin_refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-      
-      // Clear localStorage is handled by Redux logout action
-      router.push("/admin/login");
-      router.refresh(); // Refresh server components
+
+      router.push("/login");
+      router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -82,14 +75,10 @@ export default function AdminProfileClient({ initialAdmin }: AdminProfileClientP
   const handleProfileUpdate = async (updatedData: Partial<Admin>) => {
     try {
       const response = await updateProfileMutation(updatedData).unwrap();
-      
+
       if (response.success) {
         setIsEditModalOpen(false);
-        
-        // Refresh the data
         await refetch();
-        
-        // Show success message
         alert("Profile updated successfully!");
       }
     } catch (error: any) {
@@ -106,8 +95,6 @@ export default function AdminProfileClient({ initialAdmin }: AdminProfileClientP
     try {
       await changePasswordMutation(passwords).unwrap();
       setIsChangePasswordModalOpen(false);
-      
-      // Show success message
       alert("Password changed successfully!");
     } catch (error: any) {
       console.error("Password change failed:", error);
@@ -127,14 +114,13 @@ export default function AdminProfileClient({ initialAdmin }: AdminProfileClientP
     }
   };
 
-  // Redirect if not authenticated (client-side fallback)
+  // Client-side redirect: only when initialized, not authenticated, and no admin data
   useEffect(() => {
-    if (isInitialized && !isAuthenticated) {
-      router.push("/admin/login");
+    if (isInitialized && !isAuthenticated && !currentAdmin) {
+      router.push("/login");
     }
-  }, [isAuthenticated, isInitialized, router]);
+  }, [isAuthenticated, isInitialized, currentAdmin, router]);
 
-  // Loading states
   if (isLoadingProfile && !currentAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -149,33 +135,26 @@ export default function AdminProfileClient({ initialAdmin }: AdminProfileClientP
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8 flex justify-between items-center">
+        <div className="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Admin Profile
-            </h1>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Manage your account settings and preferences
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Admin Profile</h1>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Manage your account settings and preferences</p>
           </div>
           <button
             onClick={refreshProfile}
             disabled={isRefreshing || isLoadingProfile}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white disabled:opacity-50 bg-white dark:bg-gray-800 rounded-lg shadow"
           >
-            <ArrowPathIcon className={`h-4 w-4 ${isRefreshing || isLoadingProfile ? 'animate-spin' : ''}`} />
+            <ArrowPathIcon className={`h-4 w-4 ${isRefreshing || isLoadingProfile ? "animate-spin" : ""}`} />
             Refresh
           </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Profile Card */}
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
               <ProfileHeader admin={currentAdmin} />
-              
-              {/* Quick Actions */}
+
               <div className="mt-8 space-y-3">
                 <button
                   onClick={() => setIsEditModalOpen(true)}
@@ -192,7 +171,7 @@ export default function AdminProfileClient({ initialAdmin }: AdminProfileClientP
                     "Edit Profile"
                   )}
                 </button>
-                
+
                 <button
                   onClick={() => setIsChangePasswordModalOpen(true)}
                   disabled={isChangingPassword}
@@ -201,7 +180,7 @@ export default function AdminProfileClient({ initialAdmin }: AdminProfileClientP
                   <KeyIcon className="h-5 w-5" />
                   {isChangingPassword ? "Changing..." : "Change Password"}
                 </button>
-                
+
                 <button
                   onClick={handleLogout}
                   disabled={isLoggingOut}
@@ -219,64 +198,51 @@ export default function AdminProfileClient({ initialAdmin }: AdminProfileClientP
                 </button>
               </div>
 
-              {/* Role Badge */}
               <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Role
-                  </span>
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    currentAdmin?.role === 'super_admin' 
-                      ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
-                      : currentAdmin?.role === 'admin'
-                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
-                      : currentAdmin?.role === 'editor'
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
-                  }`}>
-                    {currentAdmin?.role?.replace('_', ' ').toUpperCase()}
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Role</span>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      currentAdmin?.role === "super_admin"
+                        ? "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300"
+                        : currentAdmin?.role === "admin"
+                        ? "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
+                        : currentAdmin?.role === "editor"
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300"
+                    }`}
+                  >
+                    {currentAdmin?.role?.replace("_", " ").toUpperCase()}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Quick Stats */}
             <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Account Status
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Account Status</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Status</span>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    currentAdmin?.isActive 
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                      : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                  }`}>
-                    {currentAdmin?.isActive ? 'Active' : 'Inactive'}
+                  <span
+                    className={`px-2 py-1 rounded text-xs font-medium ${
+                      currentAdmin?.isActive ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300" : "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300"
+                    }`}
+                  >
+                    {currentAdmin?.isActive ? "Active" : "Inactive"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Last Login</span>
-                  <span className="text-sm text-gray-900 dark:text-white">
-                    {currentAdmin?.lastLogin 
-                      ? new Date(currentAdmin.lastLogin).toLocaleDateString()
-                      : 'Never'}
-                  </span>
+                  <span className="text-sm text-gray-900 dark:text-white">{currentAdmin?.lastLogin ? new Date(currentAdmin.lastLogin).toLocaleDateString() : "Never"}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Member Since</span>
-                  <span className="text-sm text-gray-900 dark:text-white">
-                    {currentAdmin?.createdAt 
-                      ? new Date(currentAdmin.createdAt).toLocaleDateString()
-                      : 'N/A'}
-                  </span>
+                  <span className="text-sm text-gray-900 dark:text-white">{currentAdmin?.createdAt ? new Date(currentAdmin.createdAt).toLocaleDateString() : "N/A"}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column - Profile Details */}
           <div className="lg:col-span-2 space-y-8">
             <ProfileInfo admin={currentAdmin} />
             <ProfileSecurity admin={currentAdmin} />
@@ -284,19 +250,9 @@ export default function AdminProfileClient({ initialAdmin }: AdminProfileClientP
         </div>
       </div>
 
-      {/* Modals */}
-      <EditProfileModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onSuccess={handleProfileUpdate}
-        admin={currentAdmin}
-      />
+      <EditProfileModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} onSuccess={handleProfileUpdate} admin={currentAdmin} />
 
-      <ChangePasswordModal
-        isOpen={isChangePasswordModalOpen}
-        onClose={() => setIsChangePasswordModalOpen(false)}
-        onSuccess={handlePasswordChange}
-      />
+      <ChangePasswordModal isOpen={isChangePasswordModalOpen} onClose={() => setIsChangePasswordModalOpen(false)} onSuccess={handlePasswordChange} />
     </div>
   );
 }

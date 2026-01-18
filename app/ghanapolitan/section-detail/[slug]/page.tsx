@@ -63,7 +63,6 @@ export default function SectionDetailPage() {
   const [limit] = useState(10);
   const [isRemovingArticle, setIsRemovingArticle] = useState<string | null>(null);
   
-  // Fetch section by slug
   const { 
     data: sectionData, 
     isLoading: isLoadingSection, 
@@ -71,7 +70,6 @@ export default function SectionDetailPage() {
     refetch: refetchSection 
   } = useGetSectionBySlugQuery(slug, { skip: !slug });
   
-  // Fetch articles for this section
   const { 
     data: articlesData, 
     isLoading: isLoadingArticles, 
@@ -117,7 +115,6 @@ export default function SectionDetailPage() {
       notify('Article deleted successfully', 'success');
       refetchArticles();
       if (section) {
-        // Refetch section to update article count
         refetchSection();
       }
     } catch (err: any) {
@@ -213,7 +210,7 @@ export default function SectionDetailPage() {
           <p className="mt-2 text-gray-600 dark:text-gray-400">The section you're looking for doesn't exist.</p>
           <Button
             onClick={handleBack}
-            className="mt-4"
+            className="mt-4 text-white dark:text-white"
           >
             Back to Sections
           </Button>
@@ -225,13 +222,12 @@ export default function SectionDetailPage() {
   return (
     <div className="min-h-screen p-4 md:p-6 bg-transparent">
       <div className="max-w-7xl mx-auto">
-        {/* Section Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-start md:justify-between mb-4 gap-3">
             <Button
               onClick={handleBack}
               variant="outline"
-              className="flex items-center gap-2 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
+              className="flex items-center gap-2 text-white dark:text-white"
             >
               <ArrowLeft size={18} />
               Back to Sections
@@ -241,7 +237,7 @@ export default function SectionDetailPage() {
               <Button
                 onClick={() => router.push(`/ghanapolitan/edit-section/${section._id}`)}
                 variant="outline"
-                className="border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                className="text-white dark:text-white"
               >
                 Edit Section
               </Button>
@@ -257,7 +253,6 @@ export default function SectionDetailPage() {
           
           <div className="bg-white dark:bg-neutral-900 border border-[#e0e0e0] dark:border-neutral-800 rounded-lg shadow-lg p-6">
             <div className="flex flex-col md:flex-row gap-6">
-              {/* Section Image */}
               {section.section_image_url && (
                 <div className="md:w-1/3">
                   <div className="relative h-48 md:h-64 rounded-lg overflow-hidden">
@@ -270,7 +265,6 @@ export default function SectionDetailPage() {
                 </div>
               )}
               
-              {/* Section Info */}
               <div className={`flex-1 ${section.section_image_url ? 'md:w-2/3' : ''}`}>
                 <div className="flex items-center justify-between mb-4">
                   <div>
@@ -354,7 +348,6 @@ export default function SectionDetailPage() {
           </div>
         </div>
         
-        {/* Articles Section */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
             <div>
@@ -433,7 +426,7 @@ export default function SectionDetailPage() {
                             </div>
                           </td>
                           <td className="py-3 px-4">
-                            <Badge size="sm" variant="outline" className="border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300">
+                            <Badge size="sm" variant="outline" className="border-blue-200 dark:border-blue-800 text-white dark:text-white">
                               {article.category}
                             </Badge>
                           </td>
@@ -479,7 +472,7 @@ export default function SectionDetailPage() {
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => handleViewArticle(article.slug)}
-                                className="p-1.5 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
+                                className="p-1.5 text-blue-500 hover:text-white dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20 rounded"
                                 title="View Article"
                               >
                                 <Eye size={16} />
@@ -548,7 +541,6 @@ export default function SectionDetailPage() {
           )}
         </div>
         
-        {/* Section Stats */}
         <div className="bg-white dark:bg-neutral-900 border border-[#e0e0e0] dark:border-neutral-800 rounded-lg shadow-lg p-6">
           <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
             Section Statistics
@@ -592,14 +584,15 @@ export default function SectionDetailPage() {
                 onClick={() => router.push(`/ghanapolitan/edit-section/${section._id}`)}
                 variant="outline"
                 size="sm"
-                className="border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
+                className="text-white dark:text-white"
               >
                 Edit Section Info
               </Button>
               <Button
                 onClick={handleCreateArticle}
+                variant="outline"
                 size="sm"
-                className="bg-emerald-600 hover:bg-emerald-700"
+                className=" flex flex-row text-white dark:text-white"
               >
                 <Plus size={16} className="mr-2" />
                 Add New Article
@@ -608,7 +601,7 @@ export default function SectionDetailPage() {
                 onClick={() => router.push('/ghanapolitan/articles')}
                 variant="outline"
                 size="sm"
-                className="border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                className="text-white dark:text-white"
               >
                 Browse All Articles
               </Button>

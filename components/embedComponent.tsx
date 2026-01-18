@@ -17,7 +17,7 @@ const getPlatformIcon = (type: string) => {
     case 'youtube': return <Youtube size={20} className="text-red-600" />
     case 'instagram': return <Instagram size={20} className="text-pink-600" />
     case 'linkedin': return <Linkedin size={20} className="text-blue-700" />
-    case 'tiktok': return <Music size={20} className="text-black" />
+    case 'tiktok': return <Music size={20} className="text-[#000000]" />
     default: return <ExternalLink size={20} />
   }
 }

@@ -18,21 +18,18 @@ import { selectCurrentAdmin } from '@/store/features/auth/authSlice';
 
 const TiptapEditorDynamic = dynamic(() => Promise.resolve(TiptapEditor), { ssr: false });
 
-// Opinion categories - adjust based on your Ghanapolitan needs
 const opinionCategories = [
   'Politics',
+  'Local',
   'Business',
-  'Culture',
-  'Education',
-  'Health',
-  'Technology',
-  'Environment',
   'Sports',
   'Entertainment',
+  'Africa',
+  'Technology',
+  'World',
+  'Health',
+  'Education',
   'Lifestyle',
-  'International',
-  'Editorial',
-  'Opinion'
 ];
 
 interface FormErrors {

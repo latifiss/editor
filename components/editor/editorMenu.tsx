@@ -264,7 +264,7 @@ export const EditorMenu = ({ editor, onAddImage, isUploading = false }: EditorMe
                   onClick={() => addEmbed('tiktok')}
                   className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                 >
-                  <Music size={16} className="text-black" />
+                  <Music size={16} className="text-[#000000]" />
                   TikTok
                 </button>
               </div>

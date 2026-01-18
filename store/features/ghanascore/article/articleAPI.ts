@@ -45,7 +45,7 @@ export const articleApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Article', 'Articles', 'Headline', 'Breaking', 'TopStories', 'Live'],
+  tagTypes: ['Article', 'Articles', 'Headline', 'Breaking', 'TopStories', 'Live', 'Status'],
   endpoints: (builder) => ({
     getArticles: builder.query<ArticlesResponse, PaginationParams>({
       query: ({ page = 1, limit = 10 }) => 
@@ -77,33 +77,78 @@ export const articleApi = createApi({
         }
       },
     }),
+    
+    getArticlesByStatus: builder.query<ArticlesResponse, { 
+      status: string; 
+      page?: number; 
+      limit?: number;
+      category?: string;
+      subcategory?: string;
+      hasLivescore?: boolean;
+      livescoreTag?: string;
+    }>({
+      query: ({ status, page = 1, limit = 10, category, subcategory, hasLivescore, livescoreTag }) => {
+        const params = new URLSearchParams();
+        params.append('page', page.toString());
+        params.append('limit', limit.toString());
+        if (category) params.append('category', category);
+        if (subcategory) params.append('subcategory', subcategory);
+        if (hasLivescore !== undefined) params.append('hasLivescore', hasLivescore.toString());
+        if (livescoreTag) params.append('livescoreTag', livescoreTag);
+        
+        return `/status/${status}?${params.toString()}`;
+      },
+      providesTags: (result, error, { status }) => [
+        { type: 'Status', id: status },
+        { type: 'Articles', id: 'LIST' }
+      ],
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        dispatch(setLoading(true));
+        try {
+          const { data } = await queryFulfilled;
+          if (data.status === 'success') {
+            dispatch(setArticles({
+              articles: data.data.articles,
+              total: data.total,
+              totalPages: data.totalPages,
+              currentPage: data.currentPage,
+              limit: 10,
+            }));
+          }
+        } catch (error: any) {
+          dispatch(setError(error?.data?.message || 'Failed to fetch articles by status'));
+        } finally {
+          dispatch(setLoading(false));
+        }
+      },
+    }),
       
-      getArticleById: builder.query<ArticleResponse, string>({
-  query: (id) => `/${id}`,
-  transformResponse: (response: any) => {
-    if (response.data && response.data.article) {
-      return {
-        ...response,
-        data: response.data.article 
-      };
-    }
-    return response;
-  },
-  providesTags: (result, error, id) => [{ type: 'Article', id }],
-  async onQueryStarted(_, { dispatch, queryFulfilled }) {
-    dispatch(setLoading(true));
-    try {
-      const { data } = await queryFulfilled;
-      if (data.status === 'success') {
-        dispatch(setCurrentArticle(data.data));
-      }
-    } catch (error: any) {
-      dispatch(setError(error?.data?.message || 'Failed to fetch article by ID'));
-    } finally {
-      dispatch(setLoading(false));
-    }
-  },
-}),
+    getArticleById: builder.query<ArticleResponse, string>({
+      query: (id) => `/${id}`,
+      transformResponse: (response: any) => {
+        if (response.data && response.data.article) {
+          return {
+            ...response,
+            data: response.data.article 
+          };
+        }
+        return response;
+      },
+      providesTags: (result, error, id) => [{ type: 'Article', id }],
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        dispatch(setLoading(true));
+        try {
+          const { data } = await queryFulfilled;
+          if (data.status === 'success') {
+            dispatch(setCurrentArticle(data.data));
+          }
+        } catch (error: any) {
+          dispatch(setError(error?.data?.message || 'Failed to fetch article by ID'));
+        } finally {
+          dispatch(setLoading(false));
+        }
+      },
+    }),
 
     getArticleBySlug: builder.query<ArticleResponse, string>({
       query: (slug) => `/slug/${slug}`,
@@ -134,6 +179,7 @@ export const articleApi = createApi({
         { type: 'Headline', id: 'CURRENT' },
         { type: 'Breaking', id: 'LIST' },
         { type: 'TopStories', id: 'LIST' },
+        { type: 'Status', id: 'LIST' },
       ],
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         dispatch(setLoading(true));
@@ -163,6 +209,7 @@ export const articleApi = createApi({
         { type: 'Headline', id: 'CURRENT' },
         { type: 'Breaking', id: 'LIST' },
         { type: 'TopStories', id: 'LIST' },
+        { type: 'Status', id: 'LIST' },
       ],
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         dispatch(setLoading(true));
@@ -190,6 +237,7 @@ export const articleApi = createApi({
         { type: 'Headline', id: 'CURRENT' },
         { type: 'Breaking', id: 'LIST' },
         { type: 'TopStories', id: 'LIST' },
+        { type: 'Status', id: 'LIST' },
       ],
       async onQueryStarted(id, { dispatch, queryFulfilled }) {
         dispatch(setLoading(true));
@@ -431,6 +479,7 @@ export const articleApi = createApi({
 
 export const {
   useGetArticlesQuery,
+  useGetArticlesByStatusQuery,
   useGetArticleBySlugQuery,
   useGetArticleByIdQuery,
   useCreateArticleMutation,

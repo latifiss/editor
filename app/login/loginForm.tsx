@@ -25,7 +25,6 @@ export default function LoginForm() {
     e.preventDefault();
     setValidationError("");
 
-    // Basic validation
     if (!formData.email.trim()) {
       setValidationError("Email is required");
       return;
@@ -52,16 +51,13 @@ export default function LoginForm() {
         password: formData.password 
       }).unwrap();
       
-      // Check if login was successful
       if (result.success) {
-        // Store remember me preference
         if (formData.rememberMe) {
           localStorage.setItem("rememberMe", "true");
         } else {
           localStorage.removeItem("rememberMe");
         }
 
-        // Set cookies for server-side rendering support
         const cookiesToSet = [
           {
             name: "admin_access_token",
@@ -80,22 +76,17 @@ export default function LoginForm() {
           }
         ];
 
-        // Set all cookies
         cookiesToSet.forEach(cookie => {
           const expires = new Date();
           expires.setTime(expires.getTime() + (cookie.days * 24 * 60 * 60 * 1000));
           document.cookie = `${cookie.name}=${cookie.value}; path=/; expires=${expires.toUTCString()}; SameSite=Strict`;
         });
         
-        // Redirect to profile page
         router.push("/profile");
       } else {
         setValidationError(result.message || "Login failed");
       }
-    } catch (err: any) {
-      console.error("Login failed:", err);
-      // Error is already handled by the RTK Query middleware
-    }
+    } catch (err: any) {}
   };
 
   const handleChange = (field: keyof typeof formData) => (
@@ -111,21 +102,17 @@ export default function LoginForm() {
     if (validationError) return validationError;
     if (!error) return null;
     
-    // Handle RTK Query error
     if ('data' in error && error.data) {
       const data = error.data as any;
       
-      // Handle account locked error
       if (error.status === 423) {
         return "Your account has been locked due to too many failed login attempts. Please try again in 2 hours or contact an administrator.";
       }
       
-      // Handle deactivated account
       if (error.status === 403 && data.message?.includes('deactivated')) {
         return "Your account has been deactivated. Please contact an administrator.";
       }
       
-      // Handle login attempts left
       if (error.status === 401 && data.attemptsLeft) {
         return `Invalid email or password. ${data.attemptsLeft} attempt(s) remaining before account lock.`;
       }
@@ -249,7 +236,7 @@ export default function LoginForm() {
           </label>
           
           <Link 
-            href="/admin/forgot-password" 
+            href="/forgot-password" 
             className="text-sm font-bold text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
           >
             Forgot password?
@@ -273,19 +260,17 @@ export default function LoginForm() {
           </Button>
         </div>
 
-        {/* Security Notice */}
         <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
           <p className="text-xs text-yellow-700 dark:text-yellow-300">
             <strong>Security Notice:</strong> This is an admin area. Ensure you're using a secure connection and log out after your session.
           </p>
         </div>
 
-        {/* Alternative Links */}
         <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
           <p className="text-center text-sm text-gray-500 dark:text-gray-400">
             Need admin access?{" "}
             <Link 
-              href="/admin/request-access" 
+              href="/request-access" 
               className="underline text-blue-500 dark:text-blue-400 font-bold hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
             >
               Request access
@@ -304,7 +289,6 @@ export default function LoginForm() {
         </div>
       </form>
 
-      {/* Login Attempts Warning */}
       <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
         <p className="text-xs text-blue-700 dark:text-blue-300">
           <strong>Note:</strong> After 5 failed login attempts, your account will be locked for 2 hours. 

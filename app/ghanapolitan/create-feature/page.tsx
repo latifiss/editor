@@ -14,31 +14,37 @@ import { SelectDropdown } from '@/components/ui/inputs/dropdown';
 import Button from '@/components/ui/buttons/button';
 import { ClipLoader } from 'react-spinners';
 import TiptapEditor, { type TiptapEditorRef } from '@/components/tiptap-editor';
-import { categorySubcategories } from '@/categorySubcategories';
 import { selectCurrentAdmin } from '@/store/features/auth/authSlice';
 
 const TiptapEditorDynamic = dynamic(() => Promise.resolve(TiptapEditor), { ssr: false });
 
 const categories = [
-  'Football',
-  'Basketball',
-  'Athletics',
-  'Boxing',
-  'Motorsport',
-  'Tennis',
-  'Armwrestling',
-  'Table Tennis',
-  'Golf',
-  'Hockey',
-  'Rugby',
-  'Cricket',
-  'Volleyball',
-  'Handball',
-  'American Sports',
-  'Swimming',
-  'Mixed Martial Arts',
-  'Other'
+  'Politics',
+  'Local',
+  'Business',
+  'Sports',
+  'Entertainment',
+  'Africa',
+  'Technology',
+  'World',
+  'Health',
+  'Education',
+  'Lifestyle',
 ];
+
+const categorySubcategories = {
+  'Politics': ['Government', 'Elections', 'Policy', 'International Relations', 'Local Politics'],
+  'Local': ['Community', 'Crime & Safety', 'Infrastructure', 'Transport', 'Environment', 'Weather', 'Public Services', 'Social Issues', 'Regional'],
+  'Business': ['Economy', 'Markets', 'Companies & Investments', 'Entrepreneurship', 'Finance'],
+  'Sports': ['Football', 'Basketball', 'Athletics', 'Boxing', 'Other sports'],
+  'Africa': ['North Africa', 'West Africa', 'East Africa', 'Central Africa', 'Southern Africa'],
+  'Entertainment': ['Movies', 'Music', 'Celebrities', 'Radio & TV Shows', 'Events & Festivals', 'Arts & Culture'],
+  'Technology': ['AI & Infrastructure', 'Software', 'Hardware', 'Startups', 'Gadgets', 'Social Media', 'Other Tech'],
+  'World': [ 'Europe', 'Asia', 'Americas', 'Middle East'],
+  'Health': ['Medical', 'Nutrition', 'Healthcare'],
+  'Education': ['Schools', 'Universities', 'Research', 'Policy'],
+  'Lifestyle': ['Fashion', 'Food', 'Travel', 'Culture', 'Relationships'],
+};
 
 interface FormErrors {
   title?: string;

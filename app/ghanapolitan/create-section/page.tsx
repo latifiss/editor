@@ -15,22 +15,20 @@ import { ClipLoader } from 'react-spinners';
 import { selectCurrentAdmin } from '@/store/features/auth/authSlice';
 import { Tag, Hash, Palette, Info, Calendar } from 'lucide-react';
 
-// Predefined categories for sections
 const sectionCategories = [
-  'News',
+  'Politics',
+  'Local',
+  'Business',
   'Sports',
   'Entertainment',
-  'Business',
+  'Africa',
   'Technology',
+  'World',
   'Health',
-  'Lifestyle',
   'Education',
-  'Politics',
-  'Opinion',
-  'Special Features'
+  'Lifestyle',
 ];
 
-// Color options for sections
 const colorOptions = [
   { id: 'blue', label: 'Blue', value: '#3B82F6' },
   { id: 'green', label: 'Green', value: '#10B981' },
@@ -44,7 +42,6 @@ const colorOptions = [
   { id: 'cyan', label: 'Cyan', value: '#06B6D4' },
 ];
 
-// Expiration presets (in days)
 const expirationPresets = [
   { id: 'none', label: 'No Expiration', value: null, days: null },
   { id: '7days', label: '7 Days', value: 7, days: 7 },
@@ -69,7 +66,6 @@ export default function CreateSectionPage() {
   const admin = useSelector(selectCurrentAdmin);
   const [createSection, { isLoading }] = useCreateSectionMutation();
 
-  // Form state
   const [sectionName, setSectionName] = useState('');
   const [sectionCode, setSectionCode] = useState('');
   const [sectionSlug, setSectionSlug] = useState('');
@@ -81,29 +77,23 @@ export default function CreateSectionPage() {
   const [isSectionImportant, setIsSectionImportant] = useState(false);
   const [isActive, setIsActive] = useState(true);
   
-  // Expiration state
   const [expirationPreset, setExpirationPreset] = useState<{ id: string; label: string; value: number | string | null; days: number | null } | null>(expirationPresets[0]);
   const [expirationDate, setExpirationDate] = useState<string>('');
   const [showCustomDate, setShowCustomDate] = useState(false);
   
-  // Image handling
   const [sectionImage, setSectionImage] = useState<File | null>(null);
   const [sectionImagePreview, setSectionImagePreview] = useState<string | null>(null);
   
-  // Color handling
   const [sectionColor, setSectionColor] = useState<string>(colorOptions[0].value);
   const [backgroundColor, setBackgroundColor] = useState<string>('');
   const [showCustomColor, setShowCustomColor] = useState(false);
   const [customColor, setCustomColor] = useState<string>('#000000');
   
-  // SEO fields
   const [metaTitle, setMetaTitle] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
   
-  // Error handling
   const [errors, setErrors] = useState<FormErrors>({});
 
-  // Generate slug from section name
   useEffect(() => {
     if (sectionName && !sectionSlug) {
       const generatedSlug = sectionName
@@ -116,7 +106,6 @@ export default function CreateSectionPage() {
     }
   }, [sectionName, sectionSlug]);
 
-  // Generate section code if not provided
   useEffect(() => {
     if (sectionName && !sectionCode) {
       const words = sectionName.split(' ');
@@ -128,25 +117,21 @@ export default function CreateSectionPage() {
     }
   }, [sectionName, sectionCode]);
 
-  // Generate meta title if not provided
   useEffect(() => {
     if (sectionName && !metaTitle) {
       setMetaTitle(`${sectionName} - Ghanapolitan News`);
     }
   }, [sectionName, metaTitle]);
 
-  // Generate meta description if not provided
   useEffect(() => {
     if (sectionDescription && !metaDescription) {
       setMetaDescription(sectionDescription.substring(0, 155).trim());
     }
   }, [sectionDescription, metaDescription]);
 
-  // Handle expiration preset change
   useEffect(() => {
     if (expirationPreset?.id === 'custom') {
       setShowCustomDate(true);
-      // Set default custom date to tomorrow
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       setExpirationDate(tomorrow.toISOString().split('T')[0]);
@@ -267,12 +252,10 @@ export default function CreateSectionPage() {
 
     const formData = new FormData();
     
-    // Required fields
     formData.append('section_name', sectionName.trim());
     formData.append('section_code', sectionCode.trim().toUpperCase());
     formData.append('section_slug', sectionSlug.trim());
     
-    // Optional fields
     if (sectionDescription) {
       formData.append('section_description', sectionDescription.trim());
     }
@@ -306,14 +289,12 @@ export default function CreateSectionPage() {
       formData.append('createdBy', admin.name.trim());
     }
     
-    // Add expiration date if set
     if (expirationDate) {
       const expDate = new Date(expirationDate);
-      expDate.setHours(23, 59, 59, 999); // Set to end of day
+      expDate.setHours(23, 59, 59, 999); 
       formData.append('expires_at', expDate.toISOString());
     }
     
-    // Add image if uploaded
     if (sectionImage) {
       formData.append('image', sectionImage);
     }
@@ -372,9 +353,7 @@ export default function CreateSectionPage() {
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-6">
-          {/* Section Basic Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Section Name */}
             <div className="space-y-2">
               <label htmlFor="section_name" className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                 Section Name *
@@ -402,7 +381,6 @@ export default function CreateSectionPage() {
               )}
             </div>
 
-            {/* Section Code */}
             <div className="space-y-2">
               <label htmlFor="section_code" className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                 Section Code *
@@ -428,7 +406,6 @@ export default function CreateSectionPage() {
             </div>
           </div>
 
-          {/* Section Slug */}
           <div className="space-y-2">
             <label htmlFor="section_slug" className="text-sm font-bold text-gray-800 dark:text-gray-200">
               Section Slug *
@@ -454,7 +431,6 @@ export default function CreateSectionPage() {
             </p>
           </div>
 
-          {/* Description */}
           <div className="space-y-2">
             <label htmlFor="section_description" className="text-sm font-bold text-gray-800 dark:text-gray-200">
               Description (Optional)
@@ -470,9 +446,7 @@ export default function CreateSectionPage() {
             </div>
           </div>
 
-          {/* Category and Display Order */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Category */}
             <div className="space-y-2">
               <label htmlFor="category" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Category (Optional)
@@ -488,7 +462,6 @@ export default function CreateSectionPage() {
               </div>
             </div>
 
-            {/* Display Order */}
             <div className="space-y-2">
               <label htmlFor="displayOrder" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Display Order
@@ -509,7 +482,6 @@ export default function CreateSectionPage() {
             </div>
           </div>
 
-          {/* Expiration Date Section */}
           <div className="space-y-4 p-4 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg">
             <div className="flex items-center justify-between">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
@@ -527,7 +499,6 @@ export default function CreateSectionPage() {
               Section will automatically become inactive after this date
             </p>
             
-            {/* Expiration Presets */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Quick Presets
@@ -550,7 +521,6 @@ export default function CreateSectionPage() {
               </div>
             </div>
 
-            {/* Custom Date Input */}
             {showCustomDate && (
               <div className="space-y-2">
                 <label htmlFor="expirationDate" className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -588,7 +558,6 @@ export default function CreateSectionPage() {
             )}
           </div>
 
-          {/* Section Image */}
           <div className="space-y-2">
             <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
               Section Image (Optional)
@@ -627,7 +596,6 @@ export default function CreateSectionPage() {
             </div>
           </div>
 
-          {/* Color Selection */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
@@ -684,7 +652,6 @@ export default function CreateSectionPage() {
               </div>
             )}
 
-            {/* Background Color */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Background Color (Optional)
@@ -714,7 +681,6 @@ export default function CreateSectionPage() {
             </div>
           </div>
 
-          {/* Tags */}
           <div className="space-y-2">
             <label className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
               <Tag size={16} />
@@ -751,7 +717,6 @@ export default function CreateSectionPage() {
             )}
           </div>
 
-          {/* SEO Fields */}
           <div className="space-y-4 p-4 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg">
             <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
               SEO Settings (Optional)
@@ -792,7 +757,6 @@ export default function CreateSectionPage() {
             </div>
           </div>
 
-          {/* Section Settings */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4 p-4 border border-gray-200 dark:border-neutral-700 rounded-lg">
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
@@ -829,7 +793,6 @@ export default function CreateSectionPage() {
               </label>
             </div>
 
-            {/* Preview */}
             <div className="space-y-2 p-4 border border-gray-200 dark:border-neutral-700 rounded-lg">
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
                 Section Preview
@@ -880,7 +843,6 @@ export default function CreateSectionPage() {
             </div>
           </div>
 
-          {/* Submit Button */}
           <div className="flex gap-3 pt-4 border-t border-[#e0e0e0] dark:border-neutral-800">
             <Button
               type="button"

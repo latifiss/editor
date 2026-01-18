@@ -24,32 +24,32 @@ import { Clock, AlertCircle, Flag, Key, ArrowUp, ArrowDown, X, Plus } from 'luci
 
 const TiptapEditorDynamic = dynamic(() => Promise.resolve(TiptapEditor), { ssr: false });
 
-// Categories for Ghanapolitan
 const categories = [
   'Politics',
+  'Local',
+  'Business',
   'Sports',
   'Entertainment',
+  'Africa',
   'Technology',
-  'Business',
+  'World',
   'Health',
   'Education',
   'Lifestyle',
-  'World News',
-  'Local News',
 ];
 
-// Subcategories mapping
-const categorySubcategories: Record<string, string[]> = {
+const categorySubcategories = {
   'Politics': ['Government', 'Elections', 'Policy', 'International Relations', 'Local Politics'],
-  'Sports': ['Football', 'Basketball', 'Athletics', 'Boxing', 'Golf', 'Tennis', 'Rugby', 'Cricket'],
-  'Entertainment': ['Movies', 'Music', 'Celebrities', 'TV Shows', 'Events'],
-  'Technology': ['AI', 'Software', 'Hardware', 'Startups', 'Gadgets', 'Social Media'],
-  'Business': ['Economy', 'Markets', 'Companies', 'Entrepreneurship', 'Finance'],
-  'Health': ['Medical', 'Fitness', 'Mental Health', 'Nutrition', 'Healthcare'],
-  'Education': ['Schools', 'Universities', 'Research', 'Policy', 'Exams'],
+  'Local': ['Community', 'Crime & Safety', 'Infrastructure', 'Transport', 'Environment', 'Weather', 'Public Services', 'Social Issues', 'Regional'],
+  'Business': ['Economy', 'Markets', 'Companies & Investments', 'Entrepreneurship', 'Finance'],
+  'Sports': ['Football', 'Basketball', 'Athletics', 'Boxing', 'Other sports'],
+  'Africa': ['North Africa', 'West Africa', 'East Africa', 'Central Africa', 'Southern Africa'],
+  'Entertainment': ['Movies', 'Music', 'Celebrities', 'Radio & TV Shows', 'Events & Festivals', 'Arts & Culture'],
+  'Technology': ['AI & Infrastructure', 'Software', 'Hardware', 'Startups', 'Gadgets', 'Social Media', 'Other Tech'],
+  'World': [ 'Europe', 'Asia', 'Americas', 'Middle East'],
+  'Health': ['Medical', 'Nutrition', 'Healthcare'],
+  'Education': ['Schools', 'Universities', 'Research', 'Policy'],
   'Lifestyle': ['Fashion', 'Food', 'Travel', 'Culture', 'Relationships'],
-  'World News': ['Africa', 'Europe', 'Asia', 'Americas', 'Middle East'],
-  'Local News': ['Accra', 'Kumasi', 'Takoradi', 'Tamale', 'Regional']
 };
 
 interface FormErrors {
@@ -75,12 +75,10 @@ export default function EditLiveArticlePage() {
   const { notify } = useNotify();
   const admin = useSelector(selectCurrentAdmin);
 
-  // Use article API from your Redux logic
   const { data: articleData, isLoading: isLoadingArticle, error: articleError, refetch } = 
     useGetArticleByIdQuery(articleId, { skip: !articleId });
   const [updateArticle, { isLoading: isUpdating }] = useUpdateArticleMutation();
 
-  // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<{ id: string; label: string } | null>(null);
@@ -100,7 +98,6 @@ export default function EditLiveArticlePage() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasErrorBeenHandled, setHasErrorBeenHandled] = useState(false);
 
-  // Live updates state
   const [liveUpdates, setLiveUpdates] = useState<LiveUpdateForm[]>([]);
   const [newUpdate, setNewUpdate] = useState<Omit<LiveUpdateForm, 'id' | 'content_published_at'>>({
     content_title: '',
@@ -112,7 +109,6 @@ export default function EditLiveArticlePage() {
   const [updateImagePreview, setUpdateImagePreview] = useState<string | null>(null);
   const [updateEditorRef] = useState(() => React.createRef<TiptapEditorRef>());
 
-  // Pre-fill form with article data when loaded
   useEffect(() => {
     console.log('=== Loading Live Article Data ===');
     
@@ -126,7 +122,6 @@ export default function EditLiveArticlePage() {
         contentIsArray: Array.isArray(article.content)
       });
       
-      // Set basic fields
       setTitle(article.title || '');
       setDescription(article.description || '');
       
@@ -150,7 +145,7 @@ export default function EditLiveArticlePage() {
       setIsBreaking(!!article.isBreaking);
       setIsHeadline(!!article.isHeadline);
       setIsTopstory(!!article.isTopstory);
-      setIsLive(true); // Force live for live article editor
+      setIsLive(true); 
       
       if (article.source_name) {
         setSourceName(article.source_name);
@@ -161,24 +156,19 @@ export default function EditLiveArticlePage() {
         setThumbnailPreview(article.image_url);
       }
       
-      // Handle live article content
       let parsedContent: LiveArticleContent[] = [];
       
       try {
         if (article.content) {
           if (Array.isArray(article.content)) {
-            // Already an array (LiveArticleContent[])
             parsedContent = article.content;
           } else if (typeof article.content === 'string') {
-            // Try to parse as JSON string
             const trimmedContent = article.content.trim();
             if (trimmedContent.startsWith('[') && trimmedContent.endsWith(']')) {
               parsedContent = JSON.parse(trimmedContent);
             } else if (trimmedContent.startsWith('{')) {
-              // Single object wrapped in array
               parsedContent = [JSON.parse(trimmedContent)];
             } else {
-              // Regular string content - convert to live update
               parsedContent = [{
                 content_title: article.title || 'Initial Update',
                 content_description: article.description || '',
@@ -191,7 +181,6 @@ export default function EditLiveArticlePage() {
         }
       } catch (error) {
         console.error('Error parsing content:', error);
-        // Fallback: Convert string content to live update
         if (typeof article.content === 'string') {
           parsedContent = [{
             content_title: article.title || 'Initial Update',
@@ -203,7 +192,6 @@ export default function EditLiveArticlePage() {
         }
       }
       
-      // Convert to LiveUpdateForm with unique IDs
       const updates: LiveUpdateForm[] = parsedContent.map((content: any, index) => ({
         id: uuidv4(),
         content_title: content.content_title || `Update ${index + 1}`,
@@ -220,7 +208,6 @@ export default function EditLiveArticlePage() {
     }
   }, [articleData, isInitialized]);
 
-  // Update subcategories when category changes
   useEffect(() => {
     if (category) {
       const categoryName = category.label;
@@ -231,7 +218,6 @@ export default function EditLiveArticlePage() {
     }
   }, [category]);
 
-  // Handle loading and error states
   useEffect(() => {
     if (articleError && !hasErrorBeenHandled && articleId) {
       console.error('Article loading error:', articleError);
@@ -280,7 +266,6 @@ export default function EditLiveArticlePage() {
     );
   };
 
-  // Live update handlers
   const handleAddUpdate = () => {
     if (!newUpdate.content_title.trim() || !newUpdate.content_detail.trim()) {
       notify('Please provide a title and content for the update', 'error');
@@ -295,7 +280,6 @@ export default function EditLiveArticlePage() {
 
     setLiveUpdates([...liveUpdates, newLiveUpdate]);
     
-    // Reset form
     setNewUpdate({
       content_title: '',
       content_description: '',
@@ -402,10 +386,8 @@ export default function EditLiveArticlePage() {
     formData.append('description', description.trim());
     formData.append('category', category!.label.trim());
     
-    // Send JSON string for LiveArticleContent array
     formData.append('content', JSON.stringify(liveContent));
     
-    // Also send keyEvents separately if needed
     const keyEvents = liveContent.filter(update => update.isKey);
     if (keyEvents.length > 0) {
       formData.append('keyEvents', JSON.stringify(keyEvents));
@@ -424,10 +406,9 @@ export default function EditLiveArticlePage() {
     formData.append('isBreaking', String(isBreaking));
     formData.append('isHeadline', String(isHeadline));
     formData.append('isTopstory', String(isTopstory));
-    formData.append('isLive', 'true'); // Always true for live articles
+    formData.append('isLive', 'true'); 
     formData.append('source_name', sourceName.trim());
     
-    // Use admin name as creator
     if (admin?.name) {
       formData.append('creator', admin.name.trim());
     }
@@ -436,7 +417,6 @@ export default function EditLiveArticlePage() {
       formData.append('image', thumbnail);
     }
 
-    // Debug the payload
     console.log('Submitting Live Article FormData:');
     for (const [key, value] of formData.entries()) {
       if (key === 'content') {
@@ -488,7 +468,6 @@ export default function EditLiveArticlePage() {
     ...categories.map((cat) => ({ id: cat, label: cat })),
   ];
 
-  // Show loading state
   if (isLoadingArticle && !articleData?.data) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -500,7 +479,6 @@ export default function EditLiveArticlePage() {
     );
   }
 
-  // Show error state if article not found
   if (articleError && hasErrorBeenHandled) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -548,10 +526,8 @@ export default function EditLiveArticlePage() {
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="grid grid-cols-1 lg:grid-cols-[1.4fr_0.6fr] gap-6 lg:gap-8">
-          {/* Left Column - Live Updates */}
           <div className="flex flex-col items-center w-full bg-transparent border border-[#e0e0e0] dark:border-neutral-800 rounded-lg p-4 md:p-6">
             <div className="w-full space-y-6">
-              {/* Live Updates List */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
@@ -666,7 +642,6 @@ export default function EditLiveArticlePage() {
                 )}
               </div>
 
-              {/* Add New Update Form */}
               <div id="add-update-form" className="space-y-4 p-4 border border-emerald-200 dark:border-emerald-800 rounded-lg bg-emerald-50 dark:bg-emerald-900/10">
                 <h4 className="font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                   <Plus size={18} />
@@ -783,9 +758,7 @@ export default function EditLiveArticlePage() {
             </div>
           </div>
 
-          {/* Right Column - Article Metadata */}
           <div className="flex flex-col items-center w-full bg-transparent border border-[#e0e0e0] dark:border-neutral-800 rounded-lg p-4 md:p-6 space-y-6">
-            {/* Article Title */}
             <div className="w-full space-y-2">
               <label htmlFor="title" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Live Article Title *
@@ -807,7 +780,6 @@ export default function EditLiveArticlePage() {
               )}
             </div>
 
-            {/* Description */}
             <div className="w-full space-y-2">
               <label htmlFor="description" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Article Description *
@@ -829,7 +801,6 @@ export default function EditLiveArticlePage() {
               )}
             </div>
 
-            {/* Source Name */}
             <div className="w-full space-y-2">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Source Name (Optional)
@@ -844,7 +815,6 @@ export default function EditLiveArticlePage() {
               </div>
             </div>
 
-            {/* SEO Meta Fields - DISABLED */}
             <div className="space-y-4 p-4 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg opacity-60 cursor-not-allowed">
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 SEO Settings (Disabled)
@@ -872,7 +842,6 @@ export default function EditLiveArticlePage() {
               </div>
             </div>
 
-            {/* Thumbnail */}
             <div className="w-full space-y-2">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Featured Image (Optional)
@@ -901,7 +870,6 @@ export default function EditLiveArticlePage() {
               </div>
             </div>
 
-            {/* Category */}
             <div className="w-full space-y-2">
               <label htmlFor="category" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Category *
@@ -923,7 +891,6 @@ export default function EditLiveArticlePage() {
               )}
             </div>
 
-            {/* Subcategories */}
             {subcategories.length > 0 && (
               <div className="w-full space-y-2">
                 <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
@@ -949,7 +916,6 @@ export default function EditLiveArticlePage() {
               </div>
             )}
 
-            {/* Tags */}
             <div className="w-full space-y-2">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Tags (Optional)
@@ -985,7 +951,6 @@ export default function EditLiveArticlePage() {
               )}
             </div>
 
-            {/* Article Flags */}
             <div className="w-full space-y-4 p-4 border border-gray-200 dark:border-neutral-700 rounded-lg">
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
                 Article Flags
@@ -1041,7 +1006,6 @@ export default function EditLiveArticlePage() {
               </label>
             </div>
 
-            {/* Author Info */}
             <div className="w-full p-4 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg">
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
                 Author Information
@@ -1059,7 +1023,6 @@ export default function EditLiveArticlePage() {
               </div>
             </div>
 
-            {/* Article Details */}
             <div className="w-full p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
                 Live Article Details
@@ -1080,7 +1043,6 @@ export default function EditLiveArticlePage() {
               </div>
             </div>
 
-            {/* Save Button */}
             <div className="w-full">
               <Button
                 type="submit"

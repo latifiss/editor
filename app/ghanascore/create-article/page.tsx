@@ -46,7 +46,6 @@ export default function CreateArticlePage() {
   const [createArticle, { isLoading }] = useCreateArticleMutation();
   const admin = useSelector(selectCurrentAdmin);
 
-  // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [label, setLabel] = useState('');
@@ -66,7 +65,6 @@ export default function CreateArticlePage() {
   const [livescoreTag, setLivescoreTag] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
 
-  // Update creator when admin data is available
   useEffect(() => {
     if (admin?.name && !creator) {
       setCreator(admin.name);
@@ -76,7 +74,6 @@ export default function CreateArticlePage() {
   useEffect(() => {
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter' && e.target instanceof HTMLElement) {
-      // Check if the target is inside a dropdown
       if (e.target.closest('[role="listbox"]') || e.target.closest('.dropdown-container')) {
         e.preventDefault();
         e.stopPropagation();
@@ -88,13 +85,12 @@ export default function CreateArticlePage() {
   return () => document.removeEventListener('keydown', handleKeyDown);
 }, []);
 
-  // Update subcategories when category changes
   useEffect(() => {
     if (category) {
       const categoryName = category.label;
       const subs = categorySubcategories[categoryName as keyof typeof categorySubcategories] || [];
       setSubcategories(subs);
-      setSelectedSubcategory(null); // Reset subcategory when category changes
+      setSelectedSubcategory(null); 
     } else {
       setSubcategories([]);
       setSelectedSubcategory(null);
@@ -132,7 +128,6 @@ export default function CreateArticlePage() {
     const newErrors: FormErrors = {};
     let isValid = true;
 
-    // Validate title
     if (!title.trim()) {
       newErrors.title = 'Title is required';
       isValid = false;
@@ -141,7 +136,6 @@ export default function CreateArticlePage() {
       isValid = false;
     }
 
-    // Validate description
     if (!description.trim()) {
       newErrors.description = 'Description is required';
       isValid = false;
@@ -150,13 +144,11 @@ export default function CreateArticlePage() {
       isValid = false;
     }
 
-    // Validate category
     if (!category) {
       newErrors.category = 'Category is required';
       isValid = false;
     }
 
-    // Validate creator
     if (!creator.trim()) {
       newErrors.creator = 'Creator is required';
       isValid = false;
@@ -165,7 +157,6 @@ export default function CreateArticlePage() {
       isValid = false;
     }
 
-    // Validate content
     const editor = editorRef.current;
     if (!editor || !editor.getText().trim()) {
       newErrors.content = 'Article content is required';
@@ -175,7 +166,6 @@ export default function CreateArticlePage() {
       isValid = false;
     }
 
-    // Validate livescore tag if hasLivescore is checked
     if (hasLivescore && !livescoreTag.trim()) {
       newErrors.livescoreTag = 'Livescore tag is required when "Has Livescore" is checked';
       isValid = false;
@@ -188,12 +178,9 @@ export default function CreateArticlePage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Clear previous errors
     setErrors({});
 
-    // Validate form
     if (!validateForm()) {
-      // Scroll to first error
       const firstErrorField = Object.keys(errors)[0];
       if (firstErrorField) {
         const element = document.getElementById(firstErrorField);
@@ -219,21 +206,17 @@ export default function CreateArticlePage() {
     payload.append('description', description.trim());
     payload.append('category', category!.label.trim());
     
-    // Add subcategory if selected
     if (selectedSubcategory) {
       payload.append('subcategory', selectedSubcategory.label.trim());
     }
     
-    // Use admin name as creator (with fallback to input value)
     const creatorName = admin?.name || creator.trim();
     payload.append('creator', creatorName);
     
-    // Only add label if it has a value
     if (label.trim()) {
       payload.append('label', label.trim());
     }
 
-    // Add tags as comma-separated string
     if (tags.length > 0) {
       payload.append('tags', tags.join(','));
     }
@@ -259,15 +242,13 @@ export default function CreateArticlePage() {
       await createArticle(payload).unwrap();
       notify('Article created successfully', 'success');
       
-      // Navigate to articles list after successful creation
       setTimeout(() => {
         router.push('/ghanascore/articles');
-      }, 1500); // Small delay to show success message
+      }, 1500); 
       
     } catch (err: any) {
       console.error('Submission error:', err);
       
-      // Handle backend validation errors
       if (err?.data?.errors && Array.isArray(err.data.errors)) {
         const backendErrors: FormErrors = {};
         err.data.errors.forEach((error: string) => {
@@ -289,7 +270,6 @@ export default function CreateArticlePage() {
     }
   };
 
-  // Handle input changes with error clearing
   const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTitle(e.target.value);
     if (errors.title) {
@@ -313,11 +293,9 @@ export default function CreateArticlePage() {
 
   const handleSubcategorySearch = async (query: string) => {
   if (!query.trim()) {
-    // Return all subcategories if empty query
     return subcategories.map((sub) => ({ id: sub, label: sub }));
   }
 
-  // Filter subcategories by search query
   return subcategories
     .filter((sub) => sub.toLowerCase().includes(query.toLowerCase()))
     .map((sub) => ({ id: sub, label: sub }));
@@ -352,7 +330,6 @@ export default function CreateArticlePage() {
     <div className="flex items-start justify-center min-h-screen my-5 p-4 bg-transparent">
       <div className="w-full max-w-7xl bg-white dark:bg-neutral-900 border border-[#e0e0e0] dark:border-neutral-800 rounded-lg shadow-lg p-4 md:p-6">
         <form onSubmit={handleSubmit} noValidate className="grid grid-cols-1 lg:grid-cols-[1.4fr_0.6fr] gap-6 lg:gap-8">
-          {/* Left Column - Main Content */}
           <div className="flex flex-col items-center w-full bg-transparent border border-[#e0e0e0] dark:border-neutral-800 rounded-lg p-4 md:p-6">
             <div className="w-full mb-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
@@ -366,7 +343,6 @@ export default function CreateArticlePage() {
             </div>
 
             <div className="w-full space-y-6">
-              {/* Title */}
               <div className="space-y-2">
                 <label htmlFor="title" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                   Title *
@@ -388,7 +364,6 @@ export default function CreateArticlePage() {
                 )}
               </div>
 
-              {/* Label */}
               <div className="space-y-2">
                 <label htmlFor="label" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                   Label (Optional)
@@ -404,7 +379,6 @@ export default function CreateArticlePage() {
                 </div>
               </div>
 
-              {/* Creator - Hidden but still sent in form */}
               <div className="hidden">
                 <input
                   type="hidden"
@@ -413,7 +387,6 @@ export default function CreateArticlePage() {
                 />
               </div>
 
-              {/* Description */}
               <div className="space-y-2">
                 <label htmlFor="description" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                   Description *
@@ -435,7 +408,6 @@ export default function CreateArticlePage() {
                 )}
               </div>
 
-              {/* Content */}
               <div className="space-y-2">
                 <label htmlFor="content" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                   Content *
@@ -461,9 +433,7 @@ export default function CreateArticlePage() {
             </div>
           </div>
 
-          {/* Right Column - Sidebar */}
           <div className="flex flex-col items-center w-full bg-transparent border border-[#e0e0e0] dark:border-neutral-800 rounded-lg p-4 md:p-6 space-y-6">
-            {/* Thumbnail */}
             <div className="w-full space-y-2">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Article thumbnail (Optional)
@@ -492,7 +462,6 @@ export default function CreateArticlePage() {
               </div>
             </div>
 
-            {/* Category */}
             <div className="w-full space-y-2">
               <label htmlFor="category" className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Article category *
@@ -515,7 +484,6 @@ export default function CreateArticlePage() {
               )}
             </div>
 
-            {/* Subcategory */}
             <div className="w-full space-y-2">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Subcategory (Optional)
@@ -537,7 +505,6 @@ export default function CreateArticlePage() {
               )}
             </div>
 
-            {/* Tags */}
             <div className="w-full space-y-2">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 Tags (Optional)
@@ -573,7 +540,6 @@ export default function CreateArticlePage() {
               )}
             </div>
 
-            {/* Livescore Section */}
             <div className="w-full space-y-4 p-4 border border-gray-200 dark:border-neutral-700 rounded-lg">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -612,7 +578,6 @@ export default function CreateArticlePage() {
               )}
             </div>
 
-            {/* Checkboxes */}
             <div className="w-full space-y-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -663,7 +628,6 @@ export default function CreateArticlePage() {
               </label>
             </div>
 
-            {/* Author Information */}
             <div className="w-full p-4 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg">
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
                 Author Information
@@ -681,7 +645,6 @@ export default function CreateArticlePage() {
               </div>
             </div>
 
-            {/* Submit Button */}
             <Button
               type="submit"
               disabled={isLoading || !admin}

@@ -88,7 +88,6 @@ export default function EditArticlePage() {
     useGetArticleByIdQuery(articleId, { skip: !articleId });
   const [updateArticle, { isLoading: isUpdating }] = useUpdateArticleMutation();
 
-  // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<{ id: string; label: string } | null>(null);
@@ -178,7 +177,6 @@ export default function EditArticlePage() {
     setHasSection(false);
   };
 
-  // Check editor ref periodically
   useEffect(() => {
     const checkEditorRef = () => {
       if (editorRef.current) {
@@ -189,10 +187,8 @@ export default function EditArticlePage() {
       }
     };
     
-    // Check immediately
     checkEditorRef();
     
-    // Keep checking every 500ms for 5 seconds
     const interval = setInterval(checkEditorRef, 500);
     const timeout = setTimeout(() => {
       clearInterval(interval);
@@ -204,7 +200,6 @@ export default function EditArticlePage() {
     };
   }, []);
 
-  // Set editor content when both data and editor are ready
   useEffect(() => {
     if (articleData?.data?.content && editorRef.current && isEditorReady) {
       console.log('Attempting to set content...');
@@ -216,9 +211,7 @@ export default function EditArticlePage() {
         }
         
         try {
-          // Try the ref method
           if (typeof editorRef.current?.setContent === 'function') {
-            // Decode HTML entities first
             const decodedContent = decodeHtmlEntities(articleData.data.content);
             console.log('Decoded content length:', decodedContent.length);
             
@@ -232,7 +225,6 @@ export default function EditArticlePage() {
           } else {
             console.error('setContent is not a function on editorRef');
             
-            // Alternative: Try to access editor directly
             if (editorRef.current && (editorRef.current as any).editor) {
               const editor = (editorRef.current as any).editor;
               const decodedContent = decodeHtmlEntities(articleData.data.content);
@@ -250,13 +242,11 @@ export default function EditArticlePage() {
     }
   }, [articleData, isEditorReady]);
 
-  // Pre-fill form with article data when loaded
   useEffect(() => {
     console.log('=== Loading Article Data ===');
     console.log('articleData:', articleData);
     console.log('isInitialized:', isInitialized);
     
-    // Check if we have the article data
     if (articleData?.data && !isInitialized) {
       const article = articleData.data;
       
@@ -270,26 +260,21 @@ export default function EditArticlePage() {
         isBreaking: article.isBreaking
       });
       
-      // 1. Set basic text fields
       setTitle(article.title || '');
       setDescription(article.description || '');
       
-      // 2. Set source name
       setSourceName(article.source_name || 'Ghanapolitan');
       
-      // 3. Set category
       if (article.category) {
         console.log('Setting category:', article.category);
         setCategory({ id: article.category, label: article.category });
       }
       
-      // 4. Set subcategories
       if (article.subcategory && Array.isArray(article.subcategory)) {
         console.log('Setting subcategories:', article.subcategory);
         setSelectedSubcategories(article.subcategory);
       }
       
-      // 5. Set tags
       if (article.tags) {
         if (Array.isArray(article.tags)) {
           console.log('Setting tags:', article.tags);
@@ -301,7 +286,6 @@ export default function EditArticlePage() {
         }
       }
       
-      // 6. Set boolean flags
       console.log('Setting boolean flags:', {
         isBreaking: article.isBreaking,
         isHeadline: article.isHeadline,
@@ -314,7 +298,6 @@ export default function EditArticlePage() {
       setIsTopstory(!!article.isTopstory);
       setIsLive(!!article.isLive);
       
-      // 7. Set section data
       if (article.has_section && article.section_name) {
         console.log('Article has section:', article.section_name);
         setSectionName(article.section_name);
@@ -327,7 +310,6 @@ export default function EditArticlePage() {
           setSectionSlug(article.section_slug);
         }
         
-        // Create a section option from article data
         const articleSectionOption: SectionOption = {
           id: article.section_id || 'temp-' + Date.now(),
           label: article.section_name,
@@ -341,14 +323,12 @@ export default function EditArticlePage() {
         setSelectedSection(articleSectionOption);
       }
       
-      // 8. Set image
       if (article.image_url) {
         console.log('Setting image URL:', article.image_url);
         setCurrentImageUrl(article.image_url);
         setThumbnailPreview(article.image_url);
       }
       
-      // 9. Set editor content will be handled by separate useEffect
       if (article.content && typeof article.content === 'string') {
         console.log('Article content found, length:', article.content.length);
         console.log('Editor content will be set when editor is ready');
@@ -356,12 +336,10 @@ export default function EditArticlePage() {
         console.warn('⚠️ No content found or content is not a string');
       }
       
-      // Mark as initialized
       setIsInitialized(true);
       console.log('✅ Form initialized successfully');
       
     } else if (articleData && !isInitialized) {
-      // Log what we received
       console.log('❌ Article data structure issue:', {
         hasData: !!articleData,
         hasDataData: !!articleData?.data,
@@ -370,7 +348,6 @@ export default function EditArticlePage() {
     }
   }, [articleData, isInitialized]);
 
-  // Update subcategories when category changes
   useEffect(() => {
     if (category) {
       const subs = categorySubcategories[category.label as keyof typeof categorySubcategories] || [];
@@ -570,7 +547,6 @@ export default function EditArticlePage() {
     ...categories.map((cat) => ({ id: cat, label: cat })),
   ];
 
-  // Test functions
   const testDataLoading = () => {
     console.log('=== CURRENT STATE ===');
     console.log('Title:', title);
@@ -599,7 +575,6 @@ export default function EditArticlePage() {
       console.log('setContent is function:', typeof editorRef.current.setContent === 'function');
       console.log('getHTML is function:', typeof editorRef.current.getHTML === 'function');
       
-      // Try to call methods
       if (typeof editorRef.current.getHTML === 'function') {
         console.log('Current HTML:', editorRef.current.getHTML());
       }
@@ -613,10 +588,8 @@ export default function EditArticlePage() {
       const content = articleData.data.content;
       console.log('Testing content:', content);
       
-      // Method 1: Direct set
       editorRef.current.setContent(content);
       
-      // Method 2: Decode first
       const txt = document.createElement('textarea');
       txt.innerHTML = content;
       console.log('Decoded:', txt.value);
@@ -624,7 +597,6 @@ export default function EditArticlePage() {
     }
   };
 
-  // Show loading state
   if (isLoadingArticle && !articleData?.data) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -636,7 +608,6 @@ export default function EditArticlePage() {
     );
   }
 
-  // Show error state if article not found
   if (articleError) {
     return (
       <div className="flex items-center justify-center min-h-screen">

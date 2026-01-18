@@ -28,7 +28,6 @@ export default function SignupForm() {
     e.preventDefault();
     setValidationError("");
 
-    // Validation
     if (!formData.name.trim()) {
       setValidationError("Name is required");
       return;
@@ -54,21 +53,18 @@ export default function SignupForm() {
       return;
     }
 
-    // Prepare data for API
     const registerData = {
       email: formData.email,
       password: formData.password,
       name: formData.name,
       ...(formData.profileImage && { profileImage: formData.profileImage }),
-      ...(formData.role !== "admin" && { role: formData.role }) // Only send role if it's not the default
+      ...(formData.role !== "admin" && { role: formData.role })
     };
 
     try {
       const result = await register(registerData).unwrap();
       
-      // Check if registration was successful
       if (result.success) {
-        // Set cookies for server-side rendering support
         const cookiesToSet = [
           {
             name: "admin_access_token",
@@ -87,22 +83,17 @@ export default function SignupForm() {
           }
         ];
 
-        // Set all cookies
         cookiesToSet.forEach(cookie => {
           const expires = new Date();
           expires.setTime(expires.getTime() + (cookie.days * 24 * 60 * 60 * 1000));
           document.cookie = `${cookie.name}=${cookie.value}; path=/; expires=${expires.toUTCString()}; SameSite=Strict`;
         });
         
-        // Redirect to profile page
         router.push("/profile");
       } else {
         setValidationError(result.message || "Registration failed");
       }
-    } catch (err: any) {
-      console.error("Registration failed:", err);
-      // Error is already handled by the RTK Query middleware
-    }
+    } catch (err: any) {}
   };
 
   const handleChange = (field: keyof typeof formData) => (
@@ -118,7 +109,6 @@ export default function SignupForm() {
     if (validationError) return validationError;
     if (!error) return null;
     
-    // Handle RTK Query error
     if ('data' in error && error.data) {
       const data = error.data as any;
       if (data.errors && Array.isArray(data.errors)) {
@@ -296,7 +286,7 @@ export default function SignupForm() {
         <p className="text-center text-sm text-gray-500 dark:text-gray-400 pt-4">
           Already have an admin account?{" "}
           <Link 
-            href="/admin/login" 
+            href="/login" 
             className="underline text-green-500 dark:text-green-400 font-bold hover:text-green-600 dark:hover:text-green-300 transition-colors"
           >
             Login here
@@ -304,7 +294,6 @@ export default function SignupForm() {
         </p>
       </form>
 
-      {/* Terms and Conditions Notice */}
       <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
         <p className="text-xs text-blue-700 dark:text-blue-300">
           <strong>Note:</strong> This registration is for admin access only. 

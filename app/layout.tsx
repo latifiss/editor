@@ -1,6 +1,5 @@
 "use client";
 
-import type { Metadata } from "next";
 import React from "react";
 import { Nunito } from "next/font/google";
 import { Providers } from "./providers";

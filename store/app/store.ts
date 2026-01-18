@@ -9,6 +9,7 @@ import { afrobeatsrepArticleApi } from '../features/afrobeatsrep/article/article
 import { afeatureApi } from '../features/afrobeatsrep/feature/featureAPI'; 
 import { ghanapolitanArticleApi } from '../features/ghanapolitan/articles/articleAPI'; 
 import { ghanapolitanFeatureApi } from '../features/ghanapolitan/feature/featureAPI'; 
+import { graphicApi  } from '../features/ghanapolitan/graphic/graphicAPI'; 
 import { opinionApi } from '../features/ghanapolitan/opinion/opinionAPI'; 
 import { ghanapolitanSectionApi } from '../features/ghanapolitan/section/sectionApi'; 
 
@@ -37,6 +38,7 @@ export const setupStore = () => {
         afeatureApi.middleware, 
         ghanapolitanArticleApi.middleware, 
         ghanapolitanFeatureApi.middleware, 
+        graphicApi.middleware, 
         opinionApi.middleware, 
         ghanapolitanSectionApi.middleware, 
       ),

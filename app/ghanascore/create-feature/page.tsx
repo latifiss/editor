@@ -26,18 +26,7 @@ const categories = [
   'Boxing',
   'Motorsport',
   'Tennis',
-  'Armwrestling',
-  'Table Tennis',
-  'Golf',
-  'Hockey',
-  'Rugby',
-  'Cricket',
-  'Volleyball',
-  'Handball',
-  'American Sports',
-  'Swimming',
-  'Mixed Martial Arts',
-  'Other'
+  'OtherSports',
 ];
 
 interface FormErrors {

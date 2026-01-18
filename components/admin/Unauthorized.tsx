@@ -21,7 +21,7 @@ export default function Unauthorized() {
         
         <div className="space-y-4">
           <Link
-            href="/admin/login"
+            href="/login"
             className="inline-block w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
           >
             Go to Login

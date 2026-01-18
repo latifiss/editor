@@ -10,7 +10,7 @@ export function EditButton({ className, ...props }: EditButtonProps) {
     <button
       {...props}
       className={cn(
-        "flex items-center justify-center gap-1 h-9 bg-[#fdfdfd] border-[#e0e0e0] border-[0.5px] text-black text-sm transition-colors font-bold px-2 py-1 rounded-lg",
+        "flex items-center justify-center gap-1 h-9 bg-[#fdfdfd] border-[#e0e0e0] border-[0.5px] text-[#000000] text-sm transition-colors font-bold px-2 py-1 rounded-lg",
         className
       )}
     >

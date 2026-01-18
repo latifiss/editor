@@ -72,5 +72,5 @@ body {
 
 /* Small visual tweak for highlighted text */
 .tiptap-content mark {
-  @apply bg-yellow-200 text-black px-0.5 rounded;
+  @apply bg-yellow-200 text-[#000000] px-0.5 rounded;
 }
