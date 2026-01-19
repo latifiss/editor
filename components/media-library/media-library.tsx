@@ -57,8 +57,8 @@ const MediaLibrary: React.FC<MediaLibraryProps> = ({ onInsert, onClose }) => {
     });
   };
 
-  const uploadImage = async (file: File) => {
-    if (!file.type.startsWith("image/")) return;
+  const uploadImage = async (file: File): Promise<ImageData | null> => {
+    if (!file.type.startsWith("image/")) return null;
 
     const formData = new FormData();
     formData.append("file", file);
@@ -68,9 +68,13 @@ const MediaLibrary: React.FC<MediaLibraryProps> = ({ onInsert, onClose }) => {
         method: "POST",
         body: formData,
       });
+      if (!response.ok) {
+        throw new Error(`Upload failed with status ${response.status}`);
+      }
       return await response.json();
     } catch (error) {
       console.error("Upload error:", error);
+      return null;
     }
   };
 
@@ -85,11 +89,17 @@ const MediaLibrary: React.FC<MediaLibraryProps> = ({ onInsert, onClose }) => {
     setPreviews(loadedPreviews);
 
     const uploadPromises = Array.from(files).map(uploadImage);
-    const uploadImages = await Promise.all(uploadPromises);
+    const uploadedImages = await Promise.all(uploadPromises);
 
     loadedPreviews.forEach((preview) => URL.revokeObjectURL(preview.url));
     setPreviews([]);
-    setImages((prev) => [...uploadImages, ...prev]);
+    
+    // Filter out null values from failed uploads
+    const validUploadedImages = uploadedImages.filter(
+      (img): img is ImageData => img !== null
+    );
+    
+    setImages((prev) => [...validUploadedImages, ...prev]);
     setUploading(false);
   };
 
@@ -100,10 +110,17 @@ const MediaLibrary: React.FC<MediaLibraryProps> = ({ onInsert, onClose }) => {
       try {
         setLoading(true);
         const response = await fetch("/api/images");
+        if (!response.ok) {
+          throw new Error(`Failed to fetch images with status ${response.status}`);
+        }
         const data = await response.json();
-        setImages(data);
+        
+        // Ensure data is an array
+        const imageArray = Array.isArray(data) ? data : [];
+        setImages(imageArray);
       } catch (error) {
         console.error("Error fetching images:", error);
+        setImages([]);
       } finally {
         setLoading(false);
       }

@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useSelector } from 'react-redux';
 import { useCreateFeatureMutation } from '@/store/features/ghanascore/feature/featureAPI';
 import { useNotify } from '@/hooks/useNotify';
+import { useImageUrlReplacement } from '@/hooks/useImageUrlReplacement';
 import { NotificationContainer } from '@/components/notificationContainer';
 import { Textarea } from '@/components/ui/inputs/textarea';
 import { TextInput } from '@/components/ui/inputs/textInput';
@@ -40,6 +41,7 @@ interface FormErrors {
 export default function CreateFeaturePage() {
   const router = useRouter();
   const { notify } = useNotify();
+  const { processHTMLContent } = useImageUrlReplacement();
   const editorRef = useRef<TiptapEditorRef>(null);
   const [createFeature, { isLoading }] = useCreateFeatureMutation();
   const admin = useSelector(selectCurrentAdmin);
@@ -188,6 +190,14 @@ export default function CreateFeaturePage() {
 
     const htmlContent = editor.getHTML();
 
+    const finalHtmlContent = processHTMLContent(htmlContent, (warning) => {
+      notify(warning, 'warning');
+    });
+
+    if (!finalHtmlContent) {
+      return;
+    }
+
     const payload = new FormData();
     payload.append('title', title.trim());
     payload.append('description', description.trim());
@@ -209,7 +219,7 @@ export default function CreateFeaturePage() {
     }
 
     payload.append('published_at', new Date().toISOString());
-    payload.append('content', htmlContent);
+    payload.append('content', finalHtmlContent);
 
     if (thumbnail) {
       payload.append('image', thumbnail);

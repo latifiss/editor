@@ -10,7 +10,7 @@ import {
 export const featureApi = createApi({
   reducerPath: 'ghanascoreFeatureApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api',
+    baseUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api`,
   }),
   tagTypes: ['Feature'],
   endpoints: (builder) => ({

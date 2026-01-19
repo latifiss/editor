@@ -74,8 +74,7 @@ export default function EditGhanapolitanFeaturePage() {
   const router = useRouter();
   const params = useParams();
   const featureId = params.id as string;
-  const { notify } = useNotify();
-  const editorRef = useRef<TiptapEditorRef>(null);
+  const { notify } = useNotify();  const { processHTMLContent } = useImageUrlReplacement();  const editorRef = useRef<TiptapEditorRef>(null);
   const admin = useSelector(selectCurrentAdmin);
 
   const { 

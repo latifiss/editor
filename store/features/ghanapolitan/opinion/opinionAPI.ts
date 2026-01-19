@@ -10,7 +10,7 @@ import {
 export const opinionApi = createApi({
   reducerPath: 'ghanapolitanOpinionApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api',
+    baseUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api`,
   }),
   tagTypes: ['Opinion'],
   endpoints: (builder) => ({

@@ -11,6 +11,7 @@ import {
 } from '@/store/features/ghanapolitan/articles/articleAPI';
 import { useGetSectionsQuery } from '@/store/features/ghanapolitan/section/sectionApi';
 import { useNotify } from '@/hooks/useNotify';
+import { useImageUrlReplacement } from '@/hooks/useImageUrlReplacement';
 import { NotificationContainer } from '@/components/notificationContainer';
 import { Textarea } from '@/components/ui/inputs/textarea';
 import { TextInput } from '@/components/ui/inputs/textInput';
@@ -81,6 +82,7 @@ export default function EditArticlePage() {
   const params = useParams();
   const articleId = params.id as string;
   const { notify } = useNotify();
+  const { processHTMLContent } = useImageUrlReplacement();
   const editorRef = useRef<TiptapEditorRef>(null);
   const admin = useSelector(selectCurrentAdmin);
 
@@ -457,12 +459,20 @@ export default function EditArticlePage() {
 
     const htmlContent = editor.getHTML();
 
+    const finalHtmlContent = processHTMLContent(htmlContent, (warning) => {
+      notify(warning, 'warning');
+    });
+
+    if (!finalHtmlContent) {
+      return;
+    }
+
     const formData = new FormData();
     
     formData.append('title', title.trim());
     formData.append('description', description.trim());
     formData.append('category', category!.label.trim());
-    formData.append('content', htmlContent);
+    formData.append('content', finalHtmlContent);
     formData.append('source_name', sourceName.trim());
     
     if (selectedSubcategories.length > 0) {

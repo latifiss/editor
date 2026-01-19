@@ -44,14 +44,13 @@ import {
   SectionSlugParams,
 } from './articleTypes';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export const ghanapolitanArticleApi = createApi({
   reducerPath: 'ghanapolitanArticleApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${API_BASE_URL}/ghanapolitan/article`,
-    prepareHeaders: (headers) => {
-      headers.set('Content-Type', 'application/json');
+    baseUrl: `${API_BASE_URL}/api/ghanapolitan/article`,
+    prepareHeaders: (headers, { getState }) => {
       return headers;
     },
   }),
@@ -67,7 +66,7 @@ export const ghanapolitanArticleApi = createApi({
     'ArticleFeed',
     'ArticleFeedByCategory',
     'Comments',
-    'Status' // Added for status-based queries
+    'Status' 
   ],
   endpoints: (builder) => ({
     getArticles: builder.query<ArticlesResponse, PaginationParams>({
@@ -113,7 +112,6 @@ export const ghanapolitanArticleApi = createApi({
         }
       },
     }),
-    // Add the new getArticlesByStatus endpoint here
     getArticlesByStatus: builder.query<ArticlesResponse, { 
       status: string; 
       page?: number; 
@@ -215,6 +213,7 @@ export const ghanapolitanArticleApi = createApi({
         url: '/',
         method: 'POST',
         body: formData,
+        headers: {} as Record<string, string>, 
       }),
       invalidatesTags: [
         { type: 'Articles', id: 'LIST' },
@@ -225,7 +224,7 @@ export const ghanapolitanArticleApi = createApi({
         { type: 'SectionBySlug', id: 'LIST' },
         { type: 'ArticleFeed', id: 'LIST' },
         { type: 'ArticleFeedByCategory', id: 'LIST' },
-        { type: 'Status', id: 'LIST' }, // Added to invalidate status cache
+        { type: 'Status', id: 'LIST' }, 
       ],
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         dispatch(setLoading(true));
@@ -247,6 +246,7 @@ export const ghanapolitanArticleApi = createApi({
         url: `/${id}`,
         method: 'PUT',
         body: formData,
+        headers: {} as Record<string, string>, 
       }),
       invalidatesTags: (result, error, { id }) => [
         { type: 'Article', id },
@@ -258,7 +258,7 @@ export const ghanapolitanArticleApi = createApi({
         { type: 'SectionBySlug', id: 'LIST' },
         { type: 'ArticleFeed', id: 'LIST' },
         { type: 'ArticleFeedByCategory', id: 'LIST' },
-        { type: 'Status', id: 'LIST' }, // Added to invalidate status cache
+        { type: 'Status', id: 'LIST' },
       ],
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         dispatch(setLoading(true));
@@ -289,7 +289,7 @@ export const ghanapolitanArticleApi = createApi({
         { type: 'SectionBySlug', id: 'LIST' },
         { type: 'ArticleFeed', id: 'LIST' },
         { type: 'ArticleFeedByCategory', id: 'LIST' },
-        { type: 'Status', id: 'LIST' }, // Added to invalidate status cache
+        { type: 'Status', id: 'LIST' }, 
       ],
       async onQueryStarted(id, { dispatch, queryFulfilled }) {
         dispatch(setLoading(true));
@@ -556,7 +556,7 @@ export const ghanapolitanArticleApi = createApi({
         { type: 'SectionBySlug', id: 'LIST' },
         { type: 'ArticleFeed', id: 'LIST' },
         { type: 'ArticleFeedByCategory', id: 'LIST' },
-        { type: 'Status', id: 'LIST' }, // Added to invalidate status cache
+        { type: 'Status', id: 'LIST' }, 
       ],
     }),
     removeArticleFromSection: builder.mutation<ArticleResponse, string>({
@@ -571,7 +571,7 @@ export const ghanapolitanArticleApi = createApi({
         { type: 'SectionBySlug', id: 'LIST' },
         { type: 'ArticleFeed', id: 'LIST' },
         { type: 'ArticleFeedByCategory', id: 'LIST' },
-        { type: 'Status', id: 'LIST' }, // Added to invalidate status cache
+        { type: 'Status', id: 'LIST' }, 
       ],
     }),
     getHeadline: builder.query<HeadlineResponse, void>({

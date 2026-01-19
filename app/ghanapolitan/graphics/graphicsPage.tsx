@@ -17,27 +17,24 @@ import { Pencil, Trash2, Eye, Plus, Search, XCircle, Calendar, User, Tag, Image 
 import debounce from 'lodash/debounce';
 import { SearchInput } from '@/components/ui/inputs/searchInput';
 
+// Correct interface based on backend model
 interface Graphic {
   _id: string;
   title: string;
   description: string;
-  content: string;
-  content_images: Array<{
-    url: string;
-    caption?: string;
-    alt_text?: string;
-    order: number;
-  }>;
+  content: any; // Changed from string to any since it's Schema.Types.Mixed
   category: string;
-  creator: string;
-  slug: string;
-  featured_image_url?: string;
-  published_at: string;
-  createdAt: string;
-  tags?: string[];
-  subcategory?: string[];
+  subcategory: string[]; // Changed from optional
+  tags: string[]; // Changed from optional
   meta_title?: string;
   meta_description?: string;
+  creator: string;
+  slug: string;
+  image_url?: string; // Changed from featured_image_url to image_url
+  published_at: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 interface GraphicsPageProps {
@@ -76,10 +73,10 @@ export default function GraphicsPage({ initialGraphics }: GraphicsPageProps) {
     isFetching: isSearchFetching
   } = useSearchGraphicsQuery(
     debouncedSearchTerm ? { 
-      query: debouncedSearchTerm, 
+      q: debouncedSearchTerm, // Changed from query to q to match backend
       page, 
       limit 
-    } : { query: '', page: 1, limit: 0 },
+    } : { q: '', page: 1, limit: 0 },
     { 
       skip: !debouncedSearchTerm,
       refetchOnMountOrArgChange: true 
@@ -106,7 +103,7 @@ export default function GraphicsPage({ initialGraphics }: GraphicsPageProps) {
     if (!confirm(`Are you sure you want to delete "${title}"? This will also delete all associated images.`)) return;
     
     try {
-      await deleteGraphic(id).unwrap();
+      await deleteGraphic({ id }).unwrap(); // Changed to pass object with id
       notify('Graphic deleted successfully', 'success');
       refetchGraphics();
     } catch (err: any) {
@@ -149,10 +146,17 @@ export default function GraphicsPage({ initialGraphics }: GraphicsPageProps) {
     return tmp.textContent || tmp.innerText || '';
   };
   
-  const getPreviewText = (content: string, maxLength: number = 100) => {
-    const plainText = stripHtml(content);
-    if (plainText.length <= maxLength) return plainText;
-    return plainText.substring(0, maxLength) + '...';
+  const getPreviewText = (content: any, maxLength: number = 100) => {
+    if (typeof content === 'string') {
+      const plainText = stripHtml(content);
+      if (plainText.length <= maxLength) return plainText;
+      return plainText.substring(0, maxLength) + '...';
+    } else if (typeof content === 'object' && content !== null) {
+      // Handle object content
+      const contentStr = JSON.stringify(content);
+      return contentStr.length <= maxLength ? contentStr : contentStr.substring(0, maxLength) + '...';
+    }
+    return '';
   };
   
   const isLoading = debouncedSearchTerm ? isSearching : false;
@@ -311,16 +315,10 @@ export default function GraphicsPage({ initialGraphics }: GraphicsPageProps) {
                         <td className="py-4 px-4">
                           <div className="flex items-start gap-3">
                             <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border border-[#e0e0e0] dark:border-neutral-700">
-                              {graphic.featured_image_url ? (
+                              {graphic.image_url ? (
                                 <img
-                                  src={graphic.featured_image_url}
+                                  src={graphic.image_url} // Changed from featured_image_url to image_url
                                   alt={graphic.title}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : graphic.content_images && graphic.content_images.length > 0 ? (
-                                <img
-                                  src={graphic.content_images[0].url}
-                                  alt={graphic.content_images[0].alt_text || graphic.title}
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
@@ -414,10 +412,10 @@ export default function GraphicsPage({ initialGraphics }: GraphicsPageProps) {
                                 <div className="flex items-center gap-1">
                                   <ImageIcon size={12} />
                                   <span>
-                                    {graphic.content_images?.length || 0} image(s)
+                                    {graphic.image_url ? '1 featured image' : 'No featured image'}
                                   </span>
                                 </div>
-                                {graphic.featured_image_url && (
+                                {graphic.image_url && (
                                   <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                                     Featured
                                   </span>

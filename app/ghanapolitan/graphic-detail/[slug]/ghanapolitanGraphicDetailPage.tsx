@@ -3,14 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useGetGhanapolitanFeatureBySlugQuery } from '@/store/features/ghanapolitan/feature/featureAPI';
+import { useGetGraphicBySlugQuery } from '@/store/features/ghanapolitan/graphic/graphicAPI';
 import { useNotify } from '@/hooks/useNotify';
 import { NotificationContainer } from '@/components/notificationContainer';
 import Button from '@/components/ui/buttons/button';
 import { ClipLoader } from 'react-spinners';
 import { ChevronLeft, Calendar, User, Tag, MapPin, Building2, Bookmark, Share2, Clock } from 'lucide-react';
 
-interface Feature {
+interface Graphic {
   _id: string;
   title: string;
   description: string;
@@ -20,7 +20,7 @@ interface Feature {
   tags: string[];
   creator: string;
   image_url?: string;
-  published_at: string;
+  created_at: string;
   slug: string;
   meta_title?: string;
   meta_description?: string;
@@ -28,58 +28,58 @@ interface Feature {
   updatedAt?: string;
 }
 
-interface GhanapolitanFeatureDetailPageProps {
-  initialFeature?: Feature;
+interface GhanapolitanGraphicDetailPageProps {
+  initialGraphic?: Graphic;
 }
 
-export default function GhanapolitanFeatureDetailPage({ initialFeature }: GhanapolitanFeatureDetailPageProps) {
+export default function GhanapolitanGraphicDetailPage({ initialGraphic }: GhanapolitanGraphicDetailPageProps) {
   const params = useParams();
   const router = useRouter();
   const { notify } = useNotify();
   const slug = params.slug as string;
   
   const { 
-    data: featureData, 
+    data: graphicData, 
     isLoading, 
     error 
-  } = useGetGhanapolitanFeatureBySlugQuery(slug);
+  } = useGetGraphicBySlugQuery(slug);
   
-  const [feature, setFeature] = useState<Feature | null>(initialFeature || null);
+  const [graphic, setGraphic] = useState<Graphic | null>(initialGraphic || null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   
   useEffect(() => {
-    if (featureData?.data) {
-      setFeature(featureData.data);
+    if (graphicData?.data) {
+      setGraphic(graphicData.data);
       
-      const bookmarks = JSON.parse(localStorage.getItem('ghanapolitan_feature_bookmarks') || '[]');
-      setIsBookmarked(bookmarks.includes(featureData.data._id));
+      const bookmarks = JSON.parse(localStorage.getItem('ghanapolitan_graphic_bookmarks') || '[]');
+      setIsBookmarked(bookmarks.includes(graphicData.data._id));
     }
-  }, [featureData]);
+  }, [graphicData]);
   
   const handleBookmark = () => {
-    if (!feature) return;
+    if (!graphic) return;
     
-    const bookmarks = JSON.parse(localStorage.getItem('ghanapolitan_feature_bookmarks') || '[]');
+    const bookmarks = JSON.parse(localStorage.getItem('ghanapolitan_graphic_bookmarks') || '[]');
     
     if (isBookmarked) {
-      const newBookmarks = bookmarks.filter((id: string) => id !== feature._id);
-      localStorage.setItem('ghanapolitan_feature_bookmarks', JSON.stringify(newBookmarks));
+      const newBookmarks = bookmarks.filter((id: string) => id !== graphic._id);
+      localStorage.setItem('ghanapolitan_graphic_bookmarks', JSON.stringify(newBookmarks));
       setIsBookmarked(false);
-      notify('Article removed from bookmarks', 'info');
+      notify('Graphic removed from bookmarks', 'info');
     } else {
-      bookmarks.push(feature._id);
-      localStorage.setItem('ghanapolitan_feature_bookmarks', JSON.stringify(bookmarks));
+      bookmarks.push(graphic._id);
+      localStorage.setItem('ghanapolitan_graphic_bookmarks', JSON.stringify(bookmarks));
       setIsBookmarked(true);
-      notify('Article bookmarked', 'success');
+      notify('Graphic bookmarked', 'success');
     }
   };
   
   const handleShare = async () => {
-    if (navigator.share && feature) {
+    if (navigator.share && graphic) {
       try {
         await navigator.share({
-          title: feature.title,
-          text: feature.summary,
+          title: graphic.title,
+          text: graphic.description,
           url: window.location.href,
         });
       } catch (err) {
@@ -117,23 +117,23 @@ export default function GhanapolitanFeatureDetailPage({ initialFeature }: Ghanap
     return { __html: '' };
   };
   
-  if (isLoading && !feature) {
+  if (isLoading && !graphic) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <ClipLoader size={40} color="#059669" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading article...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading graphic...</p>
         </div>
       </div>
     );
   }
   
-  if (error || !feature) {
+  if (error || !graphic) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <h2 className="text-xl font-bold text-amber-600 dark:text-amber-400">Article not found</h2>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">This article is currently unavailable.</p>
+          <h2 className="text-xl font-bold text-amber-600 dark:text-amber-400">Graphic not found</h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">This graphic is currently unavailable.</p>
           <Button
             onClick={() => router.push('/ghanapolitan')}
             className="mt-4 bg-emerald-700 hover:bg-emerald-800"
@@ -163,43 +163,36 @@ export default function GhanapolitanFeatureDetailPage({ initialFeature }: Ghanap
               <div>
                 <div className="flex flex-wrap gap-2 mb-4">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
-                    IN-DEPTH FEATURE
+                    INFOGRAPHIC
                   </span>
                   
-                  {feature.category && (
+                  {graphic.category && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-bold bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
                       <MapPin size={12} />
-                      {feature.category}
+                      {graphic.category}
                     </span>
                   )}
                 </div>
                 
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-                  {feature.title}
+                  {graphic.title}
                 </h1>
                 
                 <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
-                  {feature.description}
+                  {graphic.description}
                 </p>
                 
                 <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600 dark:text-gray-400 mb-6">
                   <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center gap-2">
                       <Calendar size={16} />
-                      <span>{formatDate(feature.published_at)}</span>
+                      <span>{formatDate(graphic.created_at)}</span>
                     </div>
                     
                     <div className="flex items-center gap-2">
                       <User size={16} />
-                      <span className="font-medium">{feature.creator}</span>
+                      <span className="font-medium">{graphic.creator}</span>
                     </div>
-                    
-                    {feature.read_time && (
-                      <div className="flex items-center gap-2">
-                        <Clock size={16} />
-                        <span className="font-medium">{feature.read_time} min read</span>
-                      </div>
-                    )}
                   </div>
                   
                   <div className="flex items-center gap-3">
@@ -222,11 +215,11 @@ export default function GhanapolitanFeatureDetailPage({ initialFeature }: Ghanap
                 </div>
               </div>
               
-              {feature.image_url && (
+              {graphic.image_url && (
                 <div className="relative h-96 md:h-[500px] rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-800 shadow-lg">
                   <Image
-                    src={feature.image_url}
-                    alt={feature.title}
+                    src={graphic.image_url}
+                    alt={graphic.title}
                     fill
                     className="object-cover"
                     unoptimized
@@ -234,13 +227,13 @@ export default function GhanapolitanFeatureDetailPage({ initialFeature }: Ghanap
                 </div>
               )}
               
-              {feature.subcategory && feature.subcategory.length > 0 && (
+              {graphic.subcategory && graphic.subcategory.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                     <Building2 size={14} />
                     <span>Subcategories:</span>
                   </div>
-                  {feature.subcategory.map((sub, index) => (
+                  {graphic.subcategory.map((sub, index) => (
                     <span
                       key={index}
                       className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
@@ -251,13 +244,13 @@ export default function GhanapolitanFeatureDetailPage({ initialFeature }: Ghanap
                 </div>
               )}
               
-              {feature.tags && feature.tags.length > 0 && (
+              {graphic.tags && graphic.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 pt-2">
                   <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                     <Tag size={14} />
                     <span>Tags:</span>
                   </div>
-                  {feature.tags.map((tag, index) => (
+                  {graphic.tags.map((tag, index) => (
                     <span
                       key={index}
                       className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
@@ -271,14 +264,14 @@ export default function GhanapolitanFeatureDetailPage({ initialFeature }: Ghanap
               <div className="prose prose-lg dark:prose-invert max-w-none">
                 <div 
                   className="ghanapolitan-content"
-                  dangerouslySetInnerHTML={parseContent(feature.content)}
+                  dangerouslySetInnerHTML={parseContent(graphic.content)}
                 />
               </div>
               
               <div className="pt-8 border-t border-gray-200 dark:border-neutral-800">
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                    Article ID: {feature._id}
+                    Graphic ID: {graphic._id}
                   </div>
                   
                   <Button
@@ -298,47 +291,47 @@ export default function GhanapolitanFeatureDetailPage({ initialFeature }: Ghanap
             <div className="sticky top-8 space-y-8">
               <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-6 shadow-sm">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
-                  About the Author
+                  About the Creator
                 </h3>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center">
                     <User size={24} className="text-emerald-600 dark:text-emerald-300" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-900 dark:text-gray-100">{feature.creator}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Feature Writer</p>
+                    <h4 className="font-bold text-gray-900 dark:text-gray-100">{graphic.creator}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Graphics Designer</p>
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {feature.creator} writes in-depth features exploring Ghanaian culture, society, and development for Ghanapolitan.
+                  {graphic.creator} creates infographics and visual content for Ghanapolitan.
                 </p>
               </div>
               
-              {feature.category && (
+              {graphic.category && (
                 <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-6 shadow-sm">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
                     <MapPin className="inline mr-2" size={18} />
                     Category Information
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    This article is in the {feature.category} category.
+                    This graphic is in the {graphic.category} category.
                   </p>
                   <Button
-                    onClick={() => router.push(`/ghanapolitan?category=${feature.category}`)}
+                    onClick={() => router.push(`/ghanapolitan?category=${graphic.category}`)}
                     className="w-full bg-amber-600 hover:bg-amber-700"
                   >
-                    More from {feature.category}
+                    More from {graphic.category}
                   </Button>
                 </div>
               )}
               
-              {feature.tags && feature.tags.length > 0 && (
+              {graphic.tags && graphic.tags.length > 0 && (
                 <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-6 shadow-sm">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
                     Related Tags
                   </h3>
                   <div className="space-y-2">
-                    {feature.tags.slice(0, 5).map((tag, index) => (
+                    {graphic.tags.slice(0, 5).map((tag, index) => (
                       <button
                         key={index}
                         onClick={() => router.push(`/ghanapolitan?tag=${tag}`)}
@@ -353,29 +346,17 @@ export default function GhanapolitanFeatureDetailPage({ initialFeature }: Ghanap
               
               <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-6 shadow-sm">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
-                  Article Details
+                  Graphic Details
                 </h3>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Published:</span>
-                    <span className="font-medium">{formatDate(feature.published_date)}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Created:</span>
+                    <span className="font-medium">{formatDate(graphic.created_at)}</span>
                   </div>
-                  {feature.read_time && (
+                  {graphic.createdAt && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Read Time:</span>
-                      <span className="font-medium">{feature.read_time} minutes</span>
-                    </div>
-                  )}
-                  {feature.createdAt && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Created:</span>
-                      <span className="font-medium">{formatDate(feature.createdAt)}</span>
-                    </div>
-                  )}
-                  {feature.region && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Region:</span>
-                      <span className="font-medium text-amber-600 dark:text-amber-400">{feature.region}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Published:</span>
+                      <span className="font-medium">{formatDate(graphic.createdAt)}</span>
                     </div>
                   )}
                 </div>
@@ -383,16 +364,16 @@ export default function GhanapolitanFeatureDetailPage({ initialFeature }: Ghanap
               
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 shadow-sm">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
-                  More Features
+                  More Graphics
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  Explore more in-depth features on Ghanaian culture, society, and development.
+                  Explore more infographics and visual content from Ghanapolitan.
                 </p>
                 <Button
-                  onClick={() => router.push('/ghanapolitan/features')}
+                  onClick={() => router.push('/ghanapolitan/graphics')}
                   className="w-full bg-blue-600 hover:bg-blue-700"
                 >
-                  Browse All Features
+                  Browse All Graphics
                 </Button>
               </div>
             </div>

@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useSelector } from 'react-redux';
 import { useCreateGraphicMutation } from '@/store/features/ghanapolitan/graphic/graphicAPI';
 import { useNotify } from '@/hooks/useNotify';
+import { useImageUrlReplacement } from '@/hooks/useImageUrlReplacement';
 import { NotificationContainer } from '@/components/notificationContainer';
 import { Textarea } from '@/components/ui/inputs/textarea';
 import { TextInput } from '@/components/ui/inputs/textInput';
@@ -54,17 +55,10 @@ interface FormErrors {
   content?: string;
 }
 
-interface ContentImage {
-  file: File;
-  caption: string;
-  alt_text: string;
-  preview: string;
-  order: number;
-}
-
 export default function CreateGraphicPage() {
   const router = useRouter();
   const { notify } = useNotify();
+  const { processHTMLContent } = useImageUrlReplacement();
   const editorRef = useRef<TiptapEditorRef>(null);
   const [createGraphic, { isLoading }] = useCreateGraphicMutation();
   const admin = useSelector(selectCurrentAdmin);
@@ -77,9 +71,8 @@ export default function CreateGraphicPage() {
   const [selectedSubcategory, setSelectedSubcategory] = useState<{ id: string; label: string } | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
-  const [featuredImage, setFeaturedImage] = useState<File | null>(null);
-  const [featuredImagePreview, setFeaturedImagePreview] = useState<string | null>(null);
-  const [contentImages, setContentImages] = useState<ContentImage[]>([]);
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
 
   useEffect(() => {
@@ -114,48 +107,12 @@ export default function CreateGraphicPage() {
     }
   }, [category]);
 
-  const handleFeaturedImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFeaturedImage(file);
-      setFeaturedImagePreview(URL.createObjectURL(file));
+      setThumbnail(file);
+      setThumbnailPreview(URL.createObjectURL(file));
     }
-  };
-
-  const handleContentImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    
-    if (files.length > 0) {
-      const newContentImages: ContentImage[] = files.map((file, index) => ({
-        file,
-        caption: '',
-        alt_text: '',
-        preview: URL.createObjectURL(file),
-        order: contentImages.length + index,
-      }));
-      
-      setContentImages([...contentImages, ...newContentImages]);
-    }
-  };
-
-  const handleContentImageUpdate = (index: number, field: keyof ContentImage, value: string) => {
-    const updatedImages = [...contentImages];
-    if (field === 'caption' || field === 'alt_text') {
-      updatedImages[index] = { ...updatedImages[index], [field]: value };
-    }
-    setContentImages(updatedImages);
-  };
-
-  const removeContentImage = (index: number) => {
-    const updatedImages = [...contentImages];
-    URL.revokeObjectURL(updatedImages[index].preview);
-    updatedImages.splice(index, 1);
-    
-    updatedImages.forEach((img, idx) => {
-      img.order = idx;
-    });
-    
-    setContentImages(updatedImages);
   };
 
   const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -202,14 +159,6 @@ export default function CreateGraphicPage() {
       isValid = false;
     }
 
-    if (!creator.trim()) {
-      newErrors.creator = 'Creator is required';
-      isValid = false;
-    } else if (creator.trim().length < 2) {
-      newErrors.creator = 'Creator name must be at least 2 characters';
-      isValid = false;
-    }
-
     const editor = editorRef.current;
     if (!editor || !editor.getText().trim()) {
       newErrors.content = 'Graphic content is required';
@@ -224,97 +173,96 @@ export default function CreateGraphicPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  setErrors({});
+    setErrors({});
 
-  if (!validateForm()) {
-    const firstErrorField = Object.keys(errors)[0];
-    if (firstErrorField) {
-      const element = document.getElementById(firstErrorField);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        element.focus();
+    if (!validateForm()) {
+      const firstErrorField = Object.keys(errors)[0];
+      if (firstErrorField) {
+        const element = document.getElementById(firstErrorField);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.focus();
+        }
+      }
+      notify('Please fix the errors in the form', 'error');
+      return;
+    }
+
+    const editor = editorRef.current;
+    if (!editor) {
+      notify('Editor not loaded', 'error');
+      return;
+    }
+
+    const htmlContent = editor.getHTML();
+
+    const finalHtmlContent = processHTMLContent(htmlContent, (warning) => {
+      notify(warning, 'warning');
+    });
+
+    if (!finalHtmlContent) {
+      return;
+    }
+
+    const payload = new FormData();
+    payload.append('title', title.trim());
+    payload.append('description', description.trim());
+    payload.append('category', category!.label.trim());
+    
+    if (selectedSubcategory) {
+      payload.append('subcategory', selectedSubcategory.label.trim());
+    }
+    
+    const creatorName = admin?.name || 'Admin'; // Default to 'Admin' as per backend
+    payload.append('creator', creatorName);
+
+    if (tags.length > 0) {
+      payload.append('tags', tags.join(','));
+    }
+
+    payload.append('published_at', new Date().toISOString());
+    payload.append('content', finalHtmlContent);
+
+    if (thumbnail) {
+      payload.append('image', thumbnail); // Changed from 'image_url' to 'image' to match backend
+    }
+
+    try {
+      await createGraphic({ formData: payload }).unwrap();
+      notify('Graphic created successfully', 'success');
+      
+      setTimeout(() => {
+        router.push('/ghanapolitan/graphics');
+      }, 1500);
+      
+    } catch (err: any) {
+      console.error('Submission error:', err);
+      
+      if (err?.data?.message) {
+        const errorMessage = err.data.message;
+        
+        // Handle specific backend errors
+        if (errorMessage.includes('Title, description, content, and category are required')) {
+          setErrors({
+            title: 'Title is required',
+            description: 'Description is required',
+            content: 'Content is required',
+            category: 'Category is required'
+          });
+        } else if (errorMessage.includes('Slug already exists')) {
+          notify('A graphic with a similar title already exists. Please choose a different title.', 'error');
+        } else if (errorMessage.includes('Slug must be unique')) {
+          notify('A graphic with a similar title already exists. Please choose a different title.', 'error');
+        } else {
+          notify(errorMessage, 'error');
+        }
+      } else {
+        notify('Failed to create graphic. Please try again.', 'error');
       }
     }
-    notify('Please fix the errors in the form', 'error');
-    return;
-  }
-
-  const editor = editorRef.current;
-  if (!editor) {
-    notify('Editor not loaded', 'error');
-    return;
-  }
-
-  const htmlContent = editor.getHTML();
-
-  const formData = new FormData();
-  formData.append('title', title.trim());
-  formData.append('description', description.trim());
-  formData.append('content', htmlContent);
-  formData.append('category', category!.label.trim());
-  
-  // CHANGE: Send subcategory as simple string, not JSON stringified
-  if (selectedSubcategory) {
-    formData.append('subcategory', selectedSubcategory.label.trim());
-  }
-  
-  const creatorName = admin?.name || creator.trim();
-  formData.append('creator', creatorName);
-
-  // CHANGE: Send tags as comma-separated string, not JSON stringified
-  if (tags.length > 0) {
-    formData.append('tags', tags.join(','));
-  }
-
-  formData.append('published_at', new Date().toISOString());
-
-  if (featuredImage) {
-    formData.append('featured_image', featuredImage);
-  }
-
-  contentImages.forEach((img, index) => {
-    formData.append('content_images', img.file);
-    // Ensure empty strings are sent for empty captions/alt_text
-    formData.append(`content_images[${index}][caption]`, img.caption || '');
-    formData.append(`content_images[${index}][alt_text]`, img.alt_text || '');
-  });
-
-  try {
-    await createGraphic({ formData }).unwrap();
-    notify('Graphic created successfully', 'success');
-    
-    contentImages.forEach(img => {
-      URL.revokeObjectURL(img.preview);
-    });
-    
-    setTimeout(() => {
-      router.push('/ghanapolitan/graphics');
-    }, 1500);
-    
-  } catch (err: any) {
-    console.error('Submission error:', err);
-    
-    if (err?.data?.errors && Array.isArray(err.data.errors)) {
-      const backendErrors: FormErrors = {};
-      err.data.errors.forEach((error: string) => {
-        if (error.toLowerCase().includes('title')) backendErrors.title = error;
-        else if (error.toLowerCase().includes('description')) backendErrors.description = error;
-        else if (error.toLowerCase().includes('category')) backendErrors.category = error;
-        else if (error.toLowerCase().includes('creator')) backendErrors.creator = error;
-        else if (error.toLowerCase().includes('content')) backendErrors.content = error;
-      });
-      setErrors(backendErrors);
-    }
-    
-    const errorMessage =
-      err?.data?.message ||
-      err?.data?.errors?.join(', ') ||
-      'Failed to create graphic. Please try again.';
-    notify(errorMessage, 'error');
-  }
-};
+  };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTitle(e.target.value);
@@ -434,119 +382,37 @@ export default function CreateGraphicPage() {
                     }}
                   />
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  Tip: You can add images directly in the editor or upload content images in the sidebar.
-                </p>
               </div>
-
-              {contentImages.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                    Content Images ({contentImages.length})
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {contentImages.map((img, index) => (
-                      <div key={index} className="border border-gray-200 dark:border-neutral-700 rounded-lg p-3">
-                        <div className="relative h-40 w-full mb-3">
-                          <Image
-                            src={img.preview}
-                            alt={`Content image ${index + 1}`}
-                            fill
-                            className="object-cover rounded"
-                            unoptimized
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeContentImage(index)}
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                            aria-label={`Remove image ${index + 1}`}
-                          >
-                            ×
-                          </button>
-                        </div>
-                        <div className="space-y-2">
-                          <TextInput
-                            type="text"
-                            placeholder="Caption (optional)"
-                            value={img.caption}
-                            onChange={(e) => handleContentImageUpdate(index, 'caption', e.target.value)}
-                            className="text-sm"
-                          />
-                          <TextInput
-                            type="text"
-                            placeholder="Alt text (optional)"
-                            value={img.alt_text}
-                            onChange={(e) => handleContentImageUpdate(index, 'alt_text', e.target.value)}
-                            className="text-sm"
-                          />
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            Order: {img.order + 1}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
           <div className="flex flex-col items-center w-full bg-transparent border border-[#e0e0e0] dark:border-neutral-800 rounded-lg p-4 md:p-6 space-y-6">
             <div className="w-full space-y-2">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                Featured image (Optional)
+                Graphic image (Optional)
               </label>
               <div className="relative flex items-center justify-center h-[220px] w-full bg-gray-50 dark:bg-neutral-800 border border-[#e0e0e0] dark:border-neutral-700 rounded-lg overflow-hidden">
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handleFeaturedImageChange}
+                  onChange={handleThumbnailChange}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  id="featured-image"
+                  id="thumbnail"
                 />
-                {featuredImagePreview ? (
+                {thumbnailPreview ? (
                   <Image
-                    src={featuredImagePreview}
-                    alt="Selected Featured Image"
+                    src={thumbnailPreview}
+                    alt="Selected Image"
                     fill
                     className="object-cover"
                     unoptimized
                   />
                 ) : (
                   <div className="text-center text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Tap to upload featured image
+                    Tap to upload
                   </div>
                 )}
               </div>
-            </div>
-
-            <div className="w-full space-y-2">
-              <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                Content images (Optional)
-              </label>
-              <div className="relative flex items-center justify-center h-32 w-full bg-gray-50 dark:bg-neutral-800 border-2 border-dashed border-[#e0e0e0] dark:border-neutral-700 rounded-lg overflow-hidden hover:border-blue-500 dark:hover:border-blue-500 transition-colors">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleContentImageChange}
-                  multiple
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  id="content-images"
-                />
-                <div className="text-center">
-                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Tap to upload content images
-                  </div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    Multiple images allowed
-                  </p>
-                </div>
-              </div>
-              {contentImages.length > 0 && (
-                <p className="text-xs text-green-600 dark:text-green-400">
-                  {contentImages.length} image(s) added
-                </p>
-              )}
             </div>
 
             <div className="w-full space-y-2">
@@ -632,7 +498,7 @@ export default function CreateGraphicPage() {
               </h3>
               <div className="space-y-1">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  <span className="font-medium">Author:</span> {admin?.name || 'Not logged in'}
+                  <span className="font-medium">Author:</span> {admin?.name || 'Admin (default)'}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   <span className="font-medium">Email:</span> {admin?.email || 'N/A'}
@@ -645,12 +511,10 @@ export default function CreateGraphicPage() {
 
             <Button
               type="submit"
-              disabled={isLoading || !admin}
+              disabled={isLoading}
               className="w-full mt-4"
             >
-              {!admin ? (
-                'Please log in to create graphics'
-              ) : isLoading ? (
+              {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
                   <ClipLoader size={16} color="#fff" />
                   Publishing...

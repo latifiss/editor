@@ -31,12 +31,12 @@ import {
   SubcategoryParams,
 } from './articleTypes';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export const articleApi = createApi({
   reducerPath: 'ghanascoreArticleApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${API_BASE_URL}/ghanascore/article`,
+    baseUrl: `${API_BASE_URL}/api/ghanascore/article`,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth.tokens?.accessToken;
       if (token) {

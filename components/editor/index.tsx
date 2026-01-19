@@ -58,8 +58,16 @@ export default function RichTextEditor() {
       const file = (event.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
+      // Validate file type
       if (!file.type.match("image.*")) {
         alert("Please select an image file");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        alert("Image size must be less than 5MB");
         return;
       }
 
@@ -74,7 +82,8 @@ export default function RichTextEditor() {
         );
       } catch (error) {
         console.error("Error uploading image:", error);
-        alert("Error uploading image. Please try again.");
+        const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+        alert(`Error uploading image: ${errorMessage}`);
       } finally {
         setIsUploading(false);
       }

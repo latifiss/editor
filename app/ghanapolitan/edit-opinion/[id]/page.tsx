@@ -9,8 +9,7 @@ import {
   useGetOpinionByIdQuery,
   useUpdateOpinionMutation 
 } from '@/store/features/ghanapolitan/opinion/opinionAPI';
-import { useNotify } from '@/hooks/useNotify';
-import { NotificationContainer } from '@/components/notificationContainer';
+import { useNotify } from '@/hooks/useNotify';import { useImageUrlReplacement } from '@/hooks/useImageUrlReplacement';import { NotificationContainer } from '@/components/notificationContainer';
 import { Textarea } from '@/components/ui/inputs/textarea';
 import { TextInput } from '@/components/ui/inputs/textInput';
 import { SelectDropdown } from '@/components/ui/inputs/dropdown';
@@ -46,6 +45,7 @@ export default function EditOpinionPage() {
   const router = useRouter();
   const params = useParams();
   const { notify } = useNotify();
+  const { processHTMLContent } = useImageUrlReplacement();
   const editorRef = useRef<TiptapEditorRef>(null);
   const admin = useSelector(selectCurrentAdmin);
   
@@ -197,6 +197,14 @@ export default function EditOpinionPage() {
 
     const htmlContent = editor.getHTML();
 
+    const finalHtmlContent = processHTMLContent(htmlContent, (warning) => {
+      notify(warning, 'warning');
+    });
+
+    if (!finalHtmlContent) {
+      return;
+    }
+
     const payload = new FormData();
     payload.append('title', title.trim());
     payload.append('description', description.trim());
@@ -214,7 +222,7 @@ export default function EditOpinionPage() {
       payload.append('tags', tags.join(','));
     }
 
-    payload.append('content', htmlContent);
+    payload.append('content', finalHtmlContent);
 
     if (thumbnail) {
       payload.append('image', thumbnail);

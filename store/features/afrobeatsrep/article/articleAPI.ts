@@ -29,12 +29,12 @@ import {
   LabelParams,
 } from './articleTypes';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export const afrobeatsrepArticleApi = createApi({
   reducerPath: 'afrobeatsrepArticleApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${API_BASE_URL}/afrobeatsrep/article`,
+    baseUrl: `${API_BASE_URL}/api/afrobeatsrep/article`,
   }),
   tagTypes: ['Article', 'Articles', 'Headline', 'Featured', 'Recent', 'Category', 'Subcategory', 'Label'],
   endpoints: (builder) => ({

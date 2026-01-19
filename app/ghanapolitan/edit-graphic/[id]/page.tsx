@@ -10,6 +10,7 @@ import {
   useGetGraphicByIdQuery 
 } from '@/store/features/ghanapolitan/graphic/graphicAPI';
 import { useNotify } from '@/hooks/useNotify';
+import { useImageUrlReplacement } from '@/hooks/useImageUrlReplacement';
 import { NotificationContainer } from '@/components/notificationContainer';
 import { Textarea } from '@/components/ui/inputs/textarea';
 import { TextInput } from '@/components/ui/inputs/textInput';
@@ -44,22 +45,17 @@ const ghanapolitanCategories = [
 ];
 
 const ghanapolitanSubcategories: Record<string, string[]> = {
-  'Politics': ['Government', 'Elections', 'Policy', 'International Relations', 'Local Government'],
-  'Business': ['Economy', 'Finance', 'Startups', 'Agriculture', 'Trade', 'Investment'],
-  'Culture': ['Tradition', 'Festivals', 'Language', 'Customs', 'Heritage'],
-  'Lifestyle': ['Family', 'Relationships', 'Wellness', 'Home', 'Personal Development'],
-  'Entertainment': ['Movies', 'Music', 'Celebrities', 'Events', 'TV', 'Radio'],
-  'Technology': ['Innovation', 'Digital', 'Mobile', 'Internet', 'Startups'],
-  'Health': ['Healthcare', 'Fitness', 'Mental Health', 'Nutrition', 'Medical'],
-  'Education': ['Schools', 'Universities', 'Research', 'E-Learning', 'Scholarships'],
-  'Sports': ['Football', 'Athletics', 'Boxing', 'Basketball', 'Local Sports'],
-  'Travel': ['Destinations', 'Tourism', 'Hotels', 'Adventure', 'Local Travel'],
-  'Food': ['Recipes', 'Restaurants', 'Local Cuisine', 'Drinks', 'Food Culture'],
-  'Fashion': ['Designers', 'Trends', 'Traditional Wear', 'Modern Fashion', 'Accessories'],
-  'Arts': ['Visual Arts', 'Performing Arts', 'Literature', 'Crafts', 'Design'],
-  'History': ['Ancient History', 'Colonial Era', 'Independence', 'Historical Figures'],
-  'Environment': ['Conservation', 'Climate', 'Wildlife', 'Sustainability', 'Agriculture'],
-  'Opinion': ['Editorial', 'Commentary', 'Analysis', 'Perspective']
+  'Politics': ['Government', 'Elections', 'Policy', 'International Relations', 'Local Politics'],
+  'Local': ['Community', 'Crime & Safety', 'Infrastructure', 'Transport', 'Environment', 'Weather', 'Public Services', 'Social Issues', 'Regional'],
+  'Business': ['Economy', 'Markets', 'Companies & Investments', 'Entrepreneurship', 'Finance'],
+  'Sports': ['Football', 'Basketball', 'Athletics', 'Boxing', 'Other sports'],
+  'Africa': ['North Africa', 'West Africa', 'East Africa', 'Central Africa', 'Southern Africa'],
+  'Entertainment': ['Movies', 'Music', 'Celebrities', 'Radio & TV Shows', 'Events & Festivals', 'Arts & Culture'],
+  'Technology': ['AI & Infrastructure', 'Software', 'Hardware', 'Startups', 'Gadgets', 'Social Media', 'Other Tech'],
+  'World': [ 'Europe', 'Asia', 'Americas', 'Middle East'],
+  'Health': ['Medical', 'Nutrition', 'Healthcare'],
+  'Education': ['Schools', 'Universities', 'Research', 'Policy'],
+  'Lifestyle': ['Fashion', 'Food', 'Travel', 'Culture', 'Relationships'],
 };
 
 interface FormErrors {
@@ -70,119 +66,12 @@ interface FormErrors {
   content?: string;
 }
 
-interface ContentImage {
-  file?: File;
-  url: string;
-  caption: string;
-  alt_text: string;
-  preview: string;
-  order: number;
-  isNew?: boolean;
-}
-
-interface GraphicFormData {
-  title: string;
-  description: string;
-  content: string;
-  category: string;
-  subcategory?: string[];
-  tags?: string[];
-  meta_title?: string;
-  meta_description?: string;
-  creator: string;
-  slug?: string;
-  published_at?: string;
-}
-
-interface GraphicFiles {
-  featured_image?: File;
-  content_images?: Array<{
-    file: File;
-    caption: string;
-    alt_text: string;
-  }>;
-}
-
-const createGraphicFormData = (data: GraphicFormData, files: GraphicFiles, existingGraphic?: any): FormData => {
-  const formData = new FormData();
-  
-  formData.append('title', data.title.trim());
-  formData.append('description', data.description.trim());
-  formData.append('content', data.content);
-  formData.append('category', data.category.trim());
-  formData.append('creator', data.creator.trim());
-  
-  if (data.subcategory && data.subcategory.length > 0) {
-    formData.append('subcategory', JSON.stringify(data.subcategory));
-  } else if (existingGraphic?.subcategory) {
-    formData.append('subcategory', JSON.stringify(existingGraphic.subcategory));
-  }
-  
-  if (data.tags && data.tags.length > 0) {
-    formData.append('tags', JSON.stringify(data.tags));
-  } else if (existingGraphic?.tags) {
-    formData.append('tags', JSON.stringify(existingGraphic.tags));
-  }
-  
-  if (data.meta_title) {
-    formData.append('meta_title', data.meta_title.trim());
-  } else if (existingGraphic?.meta_title) {
-    formData.append('meta_title', existingGraphic.meta_title);
-  }
-  
-  if (data.meta_description) {
-    formData.append('meta_description', data.meta_description.trim());
-  } else if (existingGraphic?.meta_description) {
-    formData.append('meta_description', existingGraphic.meta_description);
-  }
-  
-  if (data.slug) {
-    formData.append('slug', data.slug.trim());
-  } else if (existingGraphic?.slug) {
-    formData.append('slug', existingGraphic.slug);
-  }
-  
-  if (data.published_at) {
-    formData.append('published_at', data.published_at);
-  } else if (existingGraphic?.published_at) {
-    formData.append('published_at', existingGraphic.published_at);
-  } else {
-    formData.append('published_at', new Date().toISOString());
-  }
-  
-  if (files.featured_image) {
-    formData.append('featured_image', files.featured_image);
-  }
-  
-  const existingImages = existingGraphic?.content_images?.filter((img: any) => 
-    !files.content_images?.some((newImg: any) => newImg.url === img.url)
-  ) || [];
-  
-  if (existingImages.length > 0) {
-    formData.append('content_images', JSON.stringify(existingImages.map((img: any) => ({
-      url: img.url,
-      caption: img.caption || '',
-      alt_text: img.alt_text || '',
-      order: img.order || 0
-    }))));
-  }
-  
-  if (files.content_images && files.content_images.length > 0) {
-    files.content_images.forEach((img, index) => {
-      formData.append('content_images', img.file);
-      formData.append(`content_images[${existingImages.length + index}][caption]`, img.caption || '');
-      formData.append(`content_images[${existingImages.length + index}][alt_text]`, img.alt_text || '');
-    });
-  }
-  
-  return formData;
-};
-
 export default function EditGraphicPage() {
   const router = useRouter();
   const params = useParams();
   const graphicId = params.id as string;
   const { notify } = useNotify();
+  const { processHTMLContent } = useImageUrlReplacement();
   const editorRef = useRef<TiptapEditorRef>(null);
   const admin = useSelector(selectCurrentAdmin);
 
@@ -203,10 +92,9 @@ export default function EditGraphicPage() {
   const [selectedSubcategory, setSelectedSubcategory] = useState<{ id: string; label: string } | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
-  const [featuredImage, setFeaturedImage] = useState<File | null>(null);
-  const [featuredImagePreview, setFeaturedImagePreview] = useState<string | null>(null);
-  const [currentFeaturedImageUrl, setCurrentFeaturedImageUrl] = useState<string | null>(null);
-  const [contentImages, setContentImages] = useState<ContentImage[]>([]);
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasErrorBeenHandled, setHasErrorBeenHandled] = useState(false);
@@ -295,20 +183,8 @@ export default function EditGraphicPage() {
       }
       
       if (graphic.featured_image_url) {
-        setCurrentFeaturedImageUrl(graphic.featured_image_url);
-        setFeaturedImagePreview(graphic.featured_image_url);
-      }
-      
-      if (graphic.content_images && Array.isArray(graphic.content_images)) {
-        const formattedContentImages: ContentImage[] = graphic.content_images.map((img: any, index: number) => ({
-          url: img.url || '',
-          caption: img.caption || '',
-          alt_text: img.alt_text || '',
-          preview: img.url || '',
-          order: img.order || index,
-          isNew: false
-        }));
-        setContentImages(formattedContentImages);
+        setCurrentImageUrl(graphic.featured_image_url);
+        setThumbnailPreview(graphic.featured_image_url);
       }
       
       if (graphic.content && typeof graphic.content === 'string') {
@@ -361,7 +237,7 @@ export default function EditGraphicPage() {
     }
   }, [graphicError, hasErrorBeenHandled, graphicId, router, notify]);
 
-  const handleFeaturedImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
@@ -374,52 +250,10 @@ export default function EditGraphicPage() {
         return;
       }
       
-      setFeaturedImage(file);
-      setFeaturedImagePreview(URL.createObjectURL(file));
-      setCurrentFeaturedImageUrl(null);
+      setThumbnail(file);
+      setThumbnailPreview(URL.createObjectURL(file));
+      setCurrentImageUrl(null);
     }
-  };
-
-  const handleContentImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    
-    if (files.length > 0) {
-      const newContentImages: ContentImage[] = files.map((file, index) => ({
-        file,
-        url: '',
-        caption: '',
-        alt_text: '',
-        preview: URL.createObjectURL(file),
-        order: contentImages.length + index,
-        isNew: true
-      }));
-      
-      setContentImages([...contentImages, ...newContentImages]);
-    }
-  };
-
-  const handleContentImageUpdate = (index: number, field: keyof ContentImage, value: string) => {
-    const updatedImages = [...contentImages];
-    if (field === 'caption' || field === 'alt_text') {
-      updatedImages[index] = { ...updatedImages[index], [field]: value };
-    }
-    setContentImages(updatedImages);
-  };
-
-  const removeContentImage = (index: number) => {
-    const updatedImages = [...contentImages];
-    
-    if (updatedImages[index].isNew) {
-      URL.revokeObjectURL(updatedImages[index].preview);
-    }
-    
-    updatedImages.splice(index, 1);
-    
-    updatedImages.forEach((img, idx) => {
-      img.order = idx;
-    });
-    
-    setContentImages(updatedImages);
   };
 
   const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -443,48 +277,36 @@ export default function EditGraphicPage() {
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-    let isValid = true;
 
     if (!title.trim()) {
       newErrors.title = 'Title is required';
-      isValid = false;
-    } else if (title.trim().length < 5) {
-      newErrors.title = 'Title must be at least 5 characters';
-      isValid = false;
     }
 
     if (!description.trim()) {
       newErrors.description = 'Description is required';
-      isValid = false;
-    } else if (description.trim().length < 10) {
-      newErrors.description = 'Description must be at least 10 characters';
-      isValid = false;
     }
 
     if (!category) {
       newErrors.category = 'Category is required';
-      isValid = false;
+    }
+
+    const editor = editorRef.current;
+    if (!editor) {
+      newErrors.content = 'Editor is not loaded';
+      return false;
+    }
+
+    const htmlContent = editor.getHTML();
+    if (!htmlContent.replace(/<[^>]*>/g, '').trim()) {
+      newErrors.content = 'Content is required';
     }
 
     if (!creator.trim()) {
       newErrors.creator = 'Creator is required';
-      isValid = false;
-    } else if (creator.trim().length < 2) {
-      newErrors.creator = 'Creator name must be at least 2 characters';
-      isValid = false;
-    }
-
-    const editor = editorRef.current;
-    if (!editor || !editor.getText().trim()) {
-      newErrors.content = 'Graphic content is required';
-      isValid = false;
-    } else if (editor.getText().trim().length < 50) {
-      newErrors.content = 'Graphic content must be at least 50 characters';
-      isValid = false;
     }
 
     setErrors(newErrors);
-    return isValid;
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -513,46 +335,44 @@ export default function EditGraphicPage() {
 
     const htmlContent = editor.getHTML();
 
-    const graphicFormData: GraphicFormData = {
-      title: title.trim(),
-      description: description.trim(),
-      content: htmlContent,
-      category: category!.label.trim(),
-      creator: admin?.name || creator.trim(),
-      tags: tags,
-      published_at: new Date().toISOString()
-    };
+    const finalHtmlContent = processHTMLContent(htmlContent, (warning) => {
+      notify(warning, 'warning');
+    });
 
-    if (selectedSubcategory) {
-      graphicFormData.subcategory = [selectedSubcategory.label.trim()];
+    if (!finalHtmlContent) {
+      return;
     }
 
-    const graphicFiles: GraphicFiles = {
-      featured_image: featuredImage || undefined,
-      content_images: contentImages
-        .filter(img => img.isNew && img.file)
-        .map(img => ({
-          file: img.file!,
-          caption: img.caption,
-          alt_text: img.alt_text
-        }))
-    };
+    const payload = new FormData();
+    payload.append('title', title.trim());
+    payload.append('description', description.trim());
+    payload.append('category', category!.label.trim());
+    
+    if (selectedSubcategory) {
+      payload.append('subcategory', selectedSubcategory.label.trim());
+    }
+    
+    const creatorName = admin?.name || creator.trim();
+    payload.append('creator', creatorName);
 
-    const formData = createGraphicFormData(graphicFormData, graphicFiles, graphicData?.data);
+    if (tags.length > 0) {
+      payload.append('tags', tags.join(','));
+    }
+
+    payload.append('published_at', new Date().toISOString());
+    payload.append('content', finalHtmlContent);
+
+    if (thumbnail) {
+      payload.append('image_url', thumbnail);
+    }
 
     try {
       await updateGraphic({
         id: graphicId,
-        formData: formData
+        formData: payload
       }).unwrap();
       
       notify('Graphic updated successfully', 'success');
-      
-      contentImages.forEach(img => {
-        if (img.isNew) {
-          URL.revokeObjectURL(img.preview);
-        }
-      });
       
       setTimeout(() => {
         router.push('/ghanapolitan/graphics');
@@ -746,67 +566,9 @@ export default function EditGraphicPage() {
                   />
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  Tip: You can add images directly in the editor or upload content images in the sidebar.
+                  Tip: You can add images directly in the editor.
                 </p>
               </div>
-
-              {contentImages.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                    Content Images ({contentImages.length})
-                    <span className="text-xs font-normal text-gray-500 ml-2">
-                      {contentImages.filter(img => img.isNew).length} new
-                    </span>
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {contentImages.map((img, index) => (
-                      <div key={index} className="border border-gray-200 dark:border-neutral-700 rounded-lg p-3">
-                        <div className="relative h-40 w-full mb-3">
-                          <Image
-                            src={img.preview}
-                            alt={img.alt_text || `Content image ${index + 1}`}
-                            fill
-                            className="object-cover rounded"
-                            unoptimized
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeContentImage(index)}
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
-                            aria-label={`Remove image ${index + 1}`}
-                          >
-                            ×
-                          </button>
-                          {img.isNew && (
-                            <span className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
-                              New
-                            </span>
-                          )}
-                        </div>
-                        <div className="space-y-2">
-                          <TextInput
-                            type="text"
-                            placeholder="Caption (optional)"
-                            value={img.caption}
-                            onChange={(e) => handleContentImageUpdate(index, 'caption', e.target.value)}
-                            className="text-sm"
-                          />
-                          <TextInput
-                            type="text"
-                            placeholder="Alt text (optional)"
-                            value={img.alt_text}
-                            onChange={(e) => handleContentImageUpdate(index, 'alt_text', e.target.value)}
-                            className="text-sm"
-                          />
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            Order: {img.order + 1}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
@@ -819,14 +581,14 @@ export default function EditGraphicPage() {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handleFeaturedImageChange}
+                  onChange={handleThumbnailChange}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   id="featured-image"
                 />
-                {featuredImagePreview || currentFeaturedImageUrl ? (
+                {thumbnailPreview || currentImageUrl ? (
                   <div className="relative w-full h-full">
                     <Image
-                      src={featuredImagePreview || currentFeaturedImageUrl || ''}
+                      src={thumbnailPreview || currentImageUrl || ''}
                       alt="Selected Featured Image"
                       fill
                       className="object-cover"
@@ -840,38 +602,9 @@ export default function EditGraphicPage() {
                   </div>
                 )}
               </div>
-              {currentFeaturedImageUrl && (
+              {currentImageUrl && (
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Current image will be replaced if you upload a new one
-                </p>
-              )}
-            </div>
-
-            <div className="w-full space-y-2">
-              <label className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                Add more content images (Optional)
-              </label>
-              <div className="relative flex items-center justify-center h-32 w-full bg-gray-50 dark:bg-neutral-800 border-2 border-dashed border-[#e0e0e0] dark:border-neutral-700 rounded-lg overflow-hidden hover:border-blue-500 dark:hover:border-blue-500 transition-colors">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleContentImageChange}
-                  multiple
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  id="content-images"
-                />
-                <div className="text-center">
-                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Click to upload more images
-                  </div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    Multiple images allowed
-                  </p>
-                </div>
-              </div>
-              {contentImages.filter(img => img.isNew).length > 0 && (
-                <p className="text-xs text-green-600 dark:text-green-400">
-                  {contentImages.filter(img => img.isNew).length} new image(s) added
                 </p>
               )}
             </div>

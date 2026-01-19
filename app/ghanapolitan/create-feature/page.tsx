@@ -5,8 +5,9 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useSelector } from 'react-redux';
-import { useCreateFeatureMutation } from '@/store/features/ghanascore/feature/featureAPI';
+import { useCreateGhanapolitanFeatureMutation } from '@/store/features/ghanapolitan/feature/featureAPI';
 import { useNotify } from '@/hooks/useNotify';
+import { useImageUrlReplacement } from '@/hooks/useImageUrlReplacement';
 import { NotificationContainer } from '@/components/notificationContainer';
 import { Textarea } from '@/components/ui/inputs/textarea';
 import { TextInput } from '@/components/ui/inputs/textInput';
@@ -57,8 +58,9 @@ interface FormErrors {
 export default function CreateFeaturePage() {
   const router = useRouter();
   const { notify } = useNotify();
+  const { processHTMLContent } = useImageUrlReplacement();
   const editorRef = useRef<TiptapEditorRef>(null);
-  const [createFeature, { isLoading }] = useCreateFeatureMutation();
+  const [createFeature, { isLoading }] = useCreateGhanapolitanFeatureMutation();
   const admin = useSelector(selectCurrentAdmin);
 
   const [title, setTitle] = useState('');
@@ -205,6 +207,14 @@ export default function CreateFeaturePage() {
 
     const htmlContent = editor.getHTML();
 
+    const finalHtmlContent = processHTMLContent(htmlContent, (warning) => {
+      notify(warning, 'warning');
+    });
+
+    if (!finalHtmlContent) {
+      return;
+    }
+
     const payload = new FormData();
     payload.append('title', title.trim());
     payload.append('description', description.trim());
@@ -226,7 +236,7 @@ export default function CreateFeaturePage() {
     }
 
     payload.append('published_at', new Date().toISOString());
-    payload.append('content', htmlContent);
+    payload.append('content', finalHtmlContent);
 
     if (thumbnail) {
       payload.append('image', thumbnail);
@@ -237,7 +247,7 @@ export default function CreateFeaturePage() {
       notify('Feature created successfully', 'success');
       
       setTimeout(() => {
-        router.push('/ghanascore/features');
+        router.push('/ghanapolitan/features');
       }, 1500);
       
     } catch (err: any) {

@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useSelector } from 'react-redux';
 import { useCreateArticleMutation } from '@/store/features/afrobeatsrep/article/articleAPI';
 import { useNotify } from '@/hooks/useNotify';
+import { useImageUrlReplacement } from '@/hooks/useImageUrlReplacement';
 import { NotificationContainer } from '@/components/notificationContainer';
 import { Textarea } from '@/components/ui/inputs/textarea';
 import { TextInput } from '@/components/ui/inputs/textInput';
@@ -37,6 +38,7 @@ interface FormErrors {
 export default function CreateArticlePage() {
   const router = useRouter();
   const { notify } = useNotify();
+  const { processHTMLContent } = useImageUrlReplacement();
   const editorRef = useRef<TiptapEditorRef>(null);
   const [createArticle, { isLoading }] = useCreateArticleMutation();
   const admin = useSelector(selectCurrentAdmin);
@@ -172,6 +174,14 @@ export default function CreateArticlePage() {
 
     const htmlContent = editor.getHTML();
 
+    const finalHtmlContent = processHTMLContent(htmlContent, (warning) => {
+      notify(warning, 'warning');
+    });
+
+    if (!finalHtmlContent) {
+      return;
+    }
+
     const payload = new FormData();
     payload.append('title', title.trim());
     payload.append('description', description.trim());
@@ -190,7 +200,7 @@ export default function CreateArticlePage() {
 
     payload.append('isHeadline', String(isHeadline));
     payload.append('published_at', new Date().toISOString());
-    payload.append('content', htmlContent);
+    payload.append('content', finalHtmlContent);
 
     if (thumbnail) {
       payload.append('image', thumbnail);

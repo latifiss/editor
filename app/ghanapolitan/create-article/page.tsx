@@ -186,6 +186,7 @@ export default function CreateArticlePage() {
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      console.log('Thumbnail selected:', file.name, file.size, file.type);
       setThumbnail(file);
       setThumbnailPreview(URL.createObjectURL(file));
     }
@@ -327,19 +328,50 @@ export default function CreateArticlePage() {
     formData.append('published_at', new Date().toISOString());
 
     if (thumbnail) {
+      console.log('Appending thumbnail to FormData:', {
+        name: thumbnail.name,
+        size: thumbnail.size,
+        type: thumbnail.type,
+        fieldName: 'image'
+      });
+      
       formData.append('image', thumbnail);
+      
+      console.log('FormData entries:');
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`${key}: File - ${value.name} (${value.size} bytes)`);
+        } else {
+          console.log(`${key}: ${value}`);
+        }
+      }
+    } else {
+      console.log('No thumbnail selected');
     }
 
     try {
-      await createArticle(formData).unwrap();
+      console.log('Sending create article request...');
+      const result = await createArticle(formData).unwrap();
+      console.log('Article created successfully:', result);
+      
       notify('Article created successfully', 'success');
+      
+      const fileInput = document.getElementById('thumbnail') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
+      
+      setThumbnail(null);
+      setThumbnailPreview(null);
       
       setTimeout(() => {
         router.push('/ghanapolitan/articles');
       }, 1500);
       
     } catch (err: any) {
-      console.error('Submission error:', err);
+      console.error('Full submission error:', err);
+      console.error('Error status:', err?.status);
+      console.error('Error data:', err?.data);
       
       if (err?.data?.errors && Array.isArray(err.data.errors)) {
         const backendErrors: FormErrors = {};
@@ -348,7 +380,9 @@ export default function CreateArticlePage() {
           else if (error.toLowerCase().includes('description')) backendErrors.description = error;
           else if (error.toLowerCase().includes('category')) backendErrors.category = error;
           else if (error.toLowerCase().includes('content')) backendErrors.content = error;
-          else if (error.toLowerCase().includes('section')) {
+          else if (error.toLowerCase().includes('image') || error.toLowerCase().includes('thumbnail')) {
+            backendErrors.content = error;
+          } else if (error.toLowerCase().includes('section')) {
             if (!backendErrors.content) backendErrors.content = error;
           }
         });
@@ -770,4 +804,3 @@ export default function CreateArticlePage() {
     </div>
   );
 }
-

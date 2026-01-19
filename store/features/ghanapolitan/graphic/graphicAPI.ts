@@ -10,7 +10,7 @@ import {
 export const graphicApi = createApi({
   reducerPath: 'graphicApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api',
+    baseUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api`,
   }),
   tagTypes: ['Graphic'],
   endpoints: (builder) => ({

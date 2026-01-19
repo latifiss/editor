@@ -55,6 +55,7 @@ export default function EditArticlePage() {
   const params = useParams();
   const articleId = params.id as string;
   const { notify } = useNotify();
+  const { processHTMLContent } = useImageUrlReplacement();
   const editorRef = useRef<TiptapEditorRef>(null);
   const admin = useSelector(selectCurrentAdmin);
 
@@ -344,6 +345,14 @@ export default function EditArticlePage() {
 
     const htmlContent = editor.getHTML();
 
+    const finalHtmlContent = processHTMLContent(htmlContent, (warning) => {
+      notify(warning, 'warning');
+    });
+
+    if (!finalHtmlContent) {
+      return;
+    }
+
     const payload = new FormData();
     payload.append('title', title.trim());
     payload.append('description', description.trim());
@@ -375,7 +384,7 @@ export default function EditArticlePage() {
     }
     
     payload.append('published_at', new Date().toISOString());
-    payload.append('content', htmlContent);
+    payload.append('content', finalHtmlContent);
 
     if (thumbnail) {
       payload.append('image', thumbnail);

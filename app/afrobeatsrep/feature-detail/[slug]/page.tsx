@@ -1,33 +1,33 @@
-import GhanapolitanFeatureDetailPage from './ghanapolitanFeatureDetailPage';
+import FeatureDetailPage from './featureDetailPage';
 import { store } from '@/store/app/store';
 
-import { ghanapolitanFeatureApi } from '@/store/features/ghanapolitan/feature/featureAPI';
+import { featureApi } from '@/store/features/afrobeatsrep/feature/featureAPI';
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const { slug } = params;
   
   try {
     const response = await store.dispatch(
-      ghanapolitanFeatureApi.endpoints.getGhanapolitanFeatureBySlug.initiate(slug)
+      featureApi.endpoints.getFeatureBySlug.initiate(slug)
     );
     
     if ('data' in response && response.data?.data) {
       const feature = response.data.data;
       return {
-        title: `${feature.title} | Ghanapolitan`,
-        description: feature.summary || 'In-depth feature article on Ghanapolitan',
+        title: `${feature.title} | AfroBeats Feature`,
+        description: feature.description || 'Entertainment and lifestyle feature on AfroBeats',
         openGraph: {
           title: feature.title,
-          description: feature.summary,
+          description: feature.description,
           type: 'article',
-          publishedTime: feature.published_date,
-          authors: [feature.author],
-          tags: feature.topics,
+          publishedTime: feature.published_at,
+          authors: [feature.creator],
+          tags: feature.tags,
         },
         twitter: {
           card: feature.image_url ? 'summary_large_image' : 'summary',
           title: feature.title,
-          description: feature.summary,
+          description: feature.description,
         },
       };
     }
@@ -36,15 +36,15 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
   
   return {
-    title: 'Feature Article | Ghanapolitan',
-    description: 'In-depth features and articles on Ghanapolitan',
+    title: 'Entertainment Feature | AfroBeats',
+    description: 'Featured entertainment and lifestyle content on AfroBeats',
   };
 }
 
 async function getFeatureData(slug: string) {
   try {
     const response = await store.dispatch(
-      ghanapolitanFeatureApi.endpoints.getGhanapolitanFeatureBySlug.initiate(slug)
+      featureApi.endpoints.getFeatureBySlug.initiate(slug)
     );
     
     return ('data' in response) ? response.data : null;
@@ -64,7 +64,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const featureData = await getFeatureData(slug);
   
   return (
-    <GhanapolitanFeatureDetailPage 
+    <FeatureDetailPage 
       initialFeature={featureData?.data}
     />
   );

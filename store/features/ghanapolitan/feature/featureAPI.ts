@@ -10,7 +10,7 @@ import {
 export const ghanapolitanFeatureApi = createApi({
   reducerPath: 'ghanapolitanFeatureApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api',
+    baseUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api`,
   }),
   tagTypes: ['GhanapolitanFeature'],
   endpoints: (builder) => ({
