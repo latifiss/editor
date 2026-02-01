@@ -88,7 +88,7 @@ export default function ProfileSecurity({ admin }: ProfileSecurityProps) {
         ))}
       </div>
 
-      <div>
+      {/* <div>
         <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Recent Activity
         </h4>
@@ -117,7 +117,7 @@ export default function ProfileSecurity({ admin }: ProfileSecurityProps) {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
 
       <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
         <div className="flex items-start gap-3">

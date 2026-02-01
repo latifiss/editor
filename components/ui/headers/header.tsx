@@ -100,7 +100,6 @@ export default function Header() {
     <header className="w-full bg-transparent">
       <div className="max-w-6xl mx-auto px-4 h-24 flex items-center justify-between">
         <LogoSelector 
-          defaultLogo="ghanascore"
           onLogoChange={(logo) => console.log('Selected:', logo.name)}
           className="my-4"
         />

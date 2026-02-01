@@ -147,11 +147,11 @@ export default function SectionsPage({ initialSections }: SectionsPageProps) {
   };
 
   const handleEditSection = (id: string) => {
-    router.push(`/ghanapolitan/edit-section/${id}`);
+    window.open(`/ghanapolitan/edit-section/${id}`, '_blank');
   };
-  
+
   const handleViewSection = (slug: string) => {
-    router.push(`/ghanapolitan/section-detail/${slug}`);
+    window.open(`/ghanapolitan/section-detail/${slug}`, '_blank');
   };
   
   const handleDeleteSection = async (id: string, name: string) => {

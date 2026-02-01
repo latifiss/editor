@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import React, { useRef, useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { useSelector } from 'react-redux';
@@ -10,6 +11,7 @@ import {
   useGetGhanapolitanFeatureByIdQuery 
 } from '@/store/features/ghanapolitan/feature/featureAPI';
 import { useNotify } from '@/hooks/useNotify';
+import { useImageUrlReplacement } from '@/hooks/useImageUrlReplacement';
 import { NotificationContainer } from '@/components/notificationContainer';
 import { Textarea } from '@/components/ui/inputs/textarea';
 import { TextInput } from '@/components/ui/inputs/textInput';
@@ -74,8 +76,12 @@ export default function EditGhanapolitanFeaturePage() {
   const router = useRouter();
   const params = useParams();
   const featureId = params.id as string;
-  const { notify } = useNotify();  const { processHTMLContent } = useImageUrlReplacement();  const editorRef = useRef<TiptapEditorRef>(null);
+  console.log('EditGhanapolitanFeaturePage - featureId:', featureId);
+  const { notify } = useNotify();
+  const { processHTMLContent } = useImageUrlReplacement();
+  const editorRef = useRef<TiptapEditorRef>(null);
   const admin = useSelector(selectCurrentAdmin);
+  console.log('EditGhanapolitanFeaturePage - admin:', admin);
 
   const { 
     data: featureData, 
@@ -83,6 +89,10 @@ export default function EditGhanapolitanFeaturePage() {
     error: featureError, 
     refetch 
   } = useGetGhanapolitanFeatureByIdQuery(featureId, { skip: !featureId });
+  
+  console.log('EditGhanapolitanFeaturePage - featureData:', featureData);
+  console.log('EditGhanapolitanFeaturePage - isLoadingFeature:', isLoadingFeature);
+  console.log('EditGhanapolitanFeaturePage - featureError:', featureError);
   
   const [updateFeature, { isLoading: isUpdating }] = useUpdateGhanapolitanFeatureMutation();
 
@@ -103,62 +113,51 @@ export default function EditGhanapolitanFeaturePage() {
   const [hasErrorBeenHandled, setHasErrorBeenHandled] = useState(false);
   const [isEditorReady, setIsEditorReady] = useState(false);
 
+  // CORRECTED: Get the feature from data - based on your console log
+  const feature = featureData?.data?.feature;
+
+  console.log('EditGhanapolitanFeaturePage - feature object:', feature);
+  console.log('EditGhanapolitanFeaturePage - feature content exists:', !!feature?.content);
+  console.log('EditGhanapolitanFeaturePage - feature content preview:', feature?.content?.substring(0, 100));
+
+  // Check if editor ref is ready
   useEffect(() => {
+    console.log('EditGhanapolitanFeaturePage - useEffect: Checking editor ref');
+    
     const checkEditorRef = () => {
       if (editorRef.current) {
+        console.log('EditGhanapolitanFeaturePage - Editor ref is ready');
         setIsEditorReady(true);
+        return true;
       }
+      return false;
     };
     
-    checkEditorRef();
+    // Check immediately
+    if (checkEditorRef()) {
+      return;
+    }
     
-    const interval = setInterval(checkEditorRef, 500);
-    const timeout = setTimeout(() => {
-      clearInterval(interval);
-    }, 5000);
+    // Check after a short delay
+    const timer = setTimeout(() => {
+      checkEditorRef();
+    }, 500);
     
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
+    return () => clearTimeout(timer);
   }, []);
 
+  // Initialize form data when feature data is loaded
   useEffect(() => {
-    if (featureData?.data?.content && editorRef.current && isEditorReady) {
-      const setContentWithRetry = (retryCount = 0) => {
-        if (retryCount > 3) {
-          return;
-        }
-        
-        try {
-          if (typeof editorRef.current?.setContent === 'function') {
-            const success = editorRef.current.setContent(featureData.data.content);
-            if (!success) {
-              setTimeout(() => setContentWithRetry(retryCount + 1), 300);
-            }
-          } else if (editorRef.current && (editorRef.current as any).editor) {
-            const editor = (editorRef.current as any).editor;
-            editor.commands.setContent(featureData.data.content);
-          }
-        } catch (error) {
-          setTimeout(() => setContentWithRetry(retryCount + 1), 300);
-        }
-      };
-      
-      setContentWithRetry();
-    }
-  }, [featureData, isEditorReady]);
+    console.log('EditGhanapolitanFeaturePage - useEffect: Initializing form data', {
+      feature: !!feature,
+      isInitialized,
+      featureKeys: feature ? Object.keys(feature) : []
+    });
 
-  useEffect(() => {
-    if (admin?.name && !creator) {
-      setCreator(admin.name);
-    }
-  }, [admin, creator]);
-
-  useEffect(() => {
-    if (featureData && featureData.data && !isInitialized) {
-      const feature = featureData.data;
+    if (feature && !isInitialized) {
+      console.log('EditGhanapolitanFeaturePage - Initializing form data from feature:', feature);
       
+      // Set form fields
       setTitle(feature.title || '');
       setDescription(feature.description || '');
       setLabel(feature.label || '');
@@ -167,12 +166,14 @@ export default function EditGhanapolitanFeaturePage() {
       setCreator(creatorName);
       
       if (feature.category) {
+        console.log('EditGhanapolitanFeaturePage - Setting category:', feature.category);
         setCategory({ id: feature.category, label: feature.category });
       }
       
       if (feature.subcategory && Array.isArray(feature.subcategory)) {
         if (feature.subcategory.length > 0) {
           const subcat = feature.subcategory[0];
+          console.log('EditGhanapolitanFeaturePage - Setting subcategory:', subcat);
           setSelectedSubcategory({ id: subcat, label: subcat });
         }
       }
@@ -187,25 +188,96 @@ export default function EditGhanapolitanFeaturePage() {
       }
       
       if (feature.image_url) {
+        console.log('EditGhanapolitanFeaturePage - Setting image URL:', feature.image_url);
         setCurrentImageUrl(feature.image_url);
         setThumbnailPreview(feature.image_url);
       }
       
-      if (feature.content && typeof feature.content === 'string') {
-        setTimeout(() => {
-          if (editorRef.current) {
-            const decodedContent = decodeHtmlEntities(feature.content);
-            try {
-              editorRef.current.setContent(decodedContent);
-            } catch (error) {}
-          }
-        }, 500);
-      }
-      
+      // Mark as initialized
       setIsInitialized(true);
+      console.log('EditGhanapolitanFeaturePage - Form initialized');
     }
-  }, [featureData, admin, isInitialized]);
+  }, [feature, admin, isInitialized]);
 
+  // Set editor content when everything is ready
+  useEffect(() => {
+    console.log('EditGhanapolitanFeaturePage - useEffect: Setting editor content', {
+      hasFeature: !!feature,
+      hasContent: !!(feature?.content),
+      hasEditorRef: !!editorRef.current,
+      isEditorReady,
+      isInitialized,
+      contentLength: feature?.content?.length
+    });
+    
+    if (feature?.content && editorRef.current && isEditorReady && isInitialized) {
+      const content = feature.content;
+      
+      console.log('EditGhanapolitanFeaturePage - Setting editor content, length:', content?.length);
+      console.log('EditGhanapolitanFeaturePage - Content preview (first 200 chars):', content?.substring(0, 200));
+      
+      // Use a timeout to ensure editor is fully ready
+      const timer = setTimeout(() => {
+        try {
+          if (editorRef.current) {
+            console.log('EditGhanapolitanFeaturePage - Attempting to set content');
+            
+            // Check what methods are available on the editor ref
+            console.log('EditGhanapolitanFeaturePage - Editor ref methods:', Object.keys(editorRef.current));
+            
+            if (typeof editorRef.current.setContent === 'function') {
+              console.log('EditGhanapolitanFeaturePage - Using setContent method');
+              const success = editorRef.current.setContent(content);
+              console.log('EditGhanapolitanFeaturePage - setContent result:', success);
+              
+              if (!success) {
+                // Try alternative approach
+                console.log('EditGhanapolitanFeaturePage - Trying alternative approach');
+                setTimeout(() => {
+                  if (editorRef.current?.setContent) {
+                    editorRef.current.setContent(content);
+                  }
+                }, 300);
+              }
+            } else {
+              console.warn('EditGhanapolitanFeaturePage - setContent method not found on editor ref');
+              
+              // Try accessing the editor instance directly
+              const editorInstance = (editorRef.current as any).editor;
+              if (editorInstance && typeof editorInstance.commands?.setContent === 'function') {
+                console.log('EditGhanapolitanFeaturePage - Using editor.commands.setContent');
+                editorInstance.commands.setContent(content);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('EditGhanapolitanFeaturePage - Error setting content:', error);
+        }
+      }, 300); // Increased delay to ensure editor is ready
+      
+      return () => clearTimeout(timer);
+    }
+  }, [feature, isEditorReady, isInitialized]);
+
+  // Debug useEffect to track state changes
+  useEffect(() => {
+    console.log('EditGhanapolitanFeaturePage - Debug state:', {
+      featureData,
+      feature,
+      isEditorReady,
+      isInitialized,
+      editorRefReady: !!editorRef.current
+    });
+  }, [featureData, feature, isEditorReady, isInitialized]);
+
+  // Update creator when admin changes
+  useEffect(() => {
+    if (admin?.name && !creator) {
+      setCreator(admin.name);
+    }
+  }, [admin, creator]);
+
+  // Handle keydown events for dropdowns
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter' && e.target instanceof HTMLElement) {
@@ -220,7 +292,9 @@ export default function EditGhanapolitanFeaturePage() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Update subcategories when category changes
   useEffect(() => {
+    console.log('EditGhanapolitanFeaturePage - Updating subcategories for category:', category);
     if (category) {
       const categoryName = category.label;
       const subs = ghanapolitanSubcategories[categoryName as keyof typeof ghanapolitanSubcategories] || [];
@@ -230,8 +304,15 @@ export default function EditGhanapolitanFeaturePage() {
     }
   }, [category]);
 
+  // Handle feature error
   useEffect(() => {
+    console.log('EditGhanapolitanFeaturePage - Handling feature error:', {
+      featureError,
+      hasErrorBeenHandled,
+      featureId
+    });
     if (featureError && !hasErrorBeenHandled && featureId) {
+      console.error('EditGhanapolitanFeaturePage - Feature Error:', featureError);
       notify('Failed to load feature. Please try again.', 'error');
       setHasErrorBeenHandled(true);
       
@@ -351,6 +432,14 @@ export default function EditGhanapolitanFeaturePage() {
 
     const htmlContent = editor.getHTML();
 
+    const finalHtmlContent = processHTMLContent(htmlContent, (warning) => {
+      notify(warning, 'warning');
+    });
+
+    if (!finalHtmlContent) {
+      return;
+    }
+
     const payload = new FormData();
     payload.append('title', title.trim());
     payload.append('description', description.trim());
@@ -372,7 +461,7 @@ export default function EditGhanapolitanFeaturePage() {
     }
 
     payload.append('published_at', new Date().toISOString());
-    payload.append('content', htmlContent);
+    payload.append('content', finalHtmlContent);
 
     if (thumbnail) {
       payload.append('image', thumbnail);
@@ -451,7 +540,19 @@ export default function EditGhanapolitanFeaturePage() {
     ...subcategories.map((sub) => ({ id: sub, label: sub })),
   ];
 
-  if (isLoadingFeature && !featureData?.data) {
+  console.log('EditGhanapolitanFeaturePage - Render state:', {
+    isLoadingFeature,
+    hasFeatureData: !!feature,
+    title,
+    category,
+    isInitialized,
+    isEditorReady,
+    featureDataKeys: feature ? Object.keys(feature) : []
+  });
+
+  // Loading state
+  if (isLoadingFeature && !feature) {
+    console.log('EditGhanapolitanFeaturePage - Showing loading state');
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -462,23 +563,25 @@ export default function EditGhanapolitanFeaturePage() {
     );
   }
 
+  // Error state
   if (featureError && hasErrorBeenHandled) {
+    console.log('EditGhanapolitanFeaturePage - Showing error state');
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h2 className="text-xl font-bold text-red-600 dark:text-red-400">Feature not found</h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">The feature you're trying to edit doesn't exist.</p>
-          <Button
-            onClick={() => router.push('/ghanapolitan/features')}
-            className="mt-4"
-          >
-            Back to Features
-          </Button>
+          <Link href="/ghanapolitan/features">
+            <Button className="mt-4">
+              Back to Features
+            </Button>
+          </Link>
         </div>
       </div>
     );
   }
 
+  // Main render
   return (
     <div className="flex items-start justify-center min-h-screen my-5 p-4 bg-transparent">
       <div className="w-full max-w-7xl bg-white dark:bg-neutral-900 border border-[#e0e0e0] dark:border-neutral-800 rounded-lg shadow-lg p-4 md:p-6">
@@ -495,17 +598,6 @@ export default function EditGhanapolitanFeaturePage() {
                 Feature will be authored by: <span className="font-semibold">{admin.name}</span>
               </p>
             )}
-          </div>
-          
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              onClick={() => router.push('/ghanapolitan/features')}
-              variant="outline"
-              size="sm"
-            >
-              Back to Features
-            </Button>
           </div>
         </div>
 
@@ -524,7 +616,6 @@ export default function EditGhanapolitanFeaturePage() {
                     onChange={handleTitleChange}
                     error={!!errors.title}
                     aria-describedby="title-error"
-                    rows={2}
                   />
                 </div>
                 {errors.title && (
@@ -561,7 +652,6 @@ export default function EditGhanapolitanFeaturePage() {
                     onChange={handleDescriptionChange}
                     error={!!errors.description}
                     aria-describedby="description-error"
-                    rows={3}
                   />
                 </div>
                 {errors.description && (
@@ -610,19 +700,16 @@ export default function EditGhanapolitanFeaturePage() {
                   id="thumbnail"
                 />
                 {thumbnailPreview || currentImageUrl ? (
-                  <div className="relative w-full h-full">
-                    <Image
-                      src={thumbnailPreview || currentImageUrl || ''}
-                      alt="Selected Thumbnail"
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </div>
+                  <Image
+                    src={thumbnailPreview || currentImageUrl || ''}
+                    alt="Selected Thumbnail"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
                 ) : (
                   <div className="text-center text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Click to upload thumbnail
-                    <p className="text-xs mt-1">Max 5MB, JPG/PNG</p>
+                    Tap to upload
                   </div>
                 )}
               </div>
@@ -693,13 +780,13 @@ export default function EditGhanapolitanFeaturePage() {
                   {tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 rounded-full text-sm font-medium"
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-medium"
                     >
                       {tag}
                       <button
                         type="button"
                         onClick={() => removeTag(tag)}
-                        className="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-200"
+                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                         aria-label={`Remove tag ${tag}`}
                       >
                         ×
@@ -728,18 +815,19 @@ export default function EditGhanapolitanFeaturePage() {
             </div>
 
             <div className="flex gap-3 w-full mt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.push('/ghanapolitan/features')}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
+              <Link href="/ghanapolitan/features" className="flex-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                >
+                  Cancel
+                </Button>
+              </Link>
               <Button
                 type="submit"
                 disabled={isUpdating || !admin || isLoadingFeature}
-                className="flex-1 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600"
+                className="flex-1"
               >
                 {!admin ? (
                   'Please log in to edit features'

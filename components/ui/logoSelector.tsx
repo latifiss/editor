@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, startTransition } from 'react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 type Logo = {
   id: string;
@@ -12,6 +12,7 @@ type Logo = {
   largeLogo: string;
   alt: string;
   path: string;
+  basePath: string;
 };
 
 const logos: Logo[] = [
@@ -22,6 +23,7 @@ const logos: Logo[] = [
     largeLogo: '/logos/m-ghanapolitan.svg',
     alt: 'Ghanapolitan Logo',
     path: '/ghanapolitan/articles',
+    basePath: '/ghanapolitan',
   },
   {
     id: 'ghanascore',
@@ -30,6 +32,7 @@ const logos: Logo[] = [
     largeLogo: '/logos/m-ghanascore.svg',
     alt: 'Ghanascore Logo',
     path: '/ghanascore/articles',
+    basePath: '/ghanascore',
   },
   {
     id: 'afrobeatsreporter',
@@ -38,41 +41,52 @@ const logos: Logo[] = [
     largeLogo: '/logos/m-afrobeatsreporter.svg',
     alt: 'Afrobeats Reporter Logo',
     path: '/afrobeatsrep/articles',
+    basePath: '/afrobeatsrep',
   },
 ];
 
 interface LogoSelectorProps {
-  defaultLogo?: string;
   onLogoChange?: (logo: Logo) => void;
   className?: string;
 }
 
 export default function LogoSelector({
-  defaultLogo = 'ghanapolitan',
   onLogoChange,
   className,
 }: LogoSelectorProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const [selectedLogo, setSelectedLogo] = useState<Logo>(() => {
-    return logos.find((l) => l.id === defaultLogo) || logos[0];
-  });
-
+  
   const [isOpen, setIsOpen] = useState(false);
 
-  /**
-   * ✅ Prefetch all routes for instant navigation
-   */
-  useEffect(() => {
-    logos.forEach((logo) => {
-      router.prefetch(logo.path);
-    });
-  }, [router]);
+  const getCurrentLogo = (): Logo => {
+    const currentLogo = logos.find(logo => 
+      pathname.startsWith(logo.basePath)
+    );
+    
+    return currentLogo || logos[0];
+  };
 
-  /**
-   * Close dropdown on outside click
-   */
+  const [selectedLogo, setSelectedLogo] = useState<Logo>(getCurrentLogo());
+
+  useEffect(() => {
+    const newLogo = getCurrentLogo();
+    if (newLogo.id !== selectedLogo.id) {
+      setSelectedLogo(newLogo);
+      onLogoChange?.(newLogo);
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    const currentLogo = getCurrentLogo();
+    logos.forEach((logo) => {
+      if (logo.id === currentLogo.id) {
+        router.prefetch(logo.path);
+      }
+    });
+  }, [router, pathname]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -88,24 +102,23 @@ export default function LogoSelector({
       document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  /**
-   * 🚀 FAST navigation handler
-   */
   const handleLogoSelect = (logo: Logo) => {
     if (logo.id === selectedLogo.id) {
       setIsOpen(false);
       return;
     }
 
-    // Instant UI update
     setSelectedLogo(logo);
     onLogoChange?.(logo);
     setIsOpen(false);
 
-    // Non-blocking navigation
-    startTransition(() => {
-      router.push(logo.path);
-    });
+    if (logo.id !== getCurrentLogo().id) {
+      window.open(logo.path, '_blank');
+    } else {
+      startTransition(() => {
+        router.push(logo.path);
+      });
+    }
   };
 
   return (
@@ -113,7 +126,6 @@ export default function LogoSelector({
       ref={dropdownRef}
       className={cn('relative inline-block', className)}
     >
-      {/* Trigger */}
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
@@ -138,7 +150,6 @@ export default function LogoSelector({
         />
       </button>
 
-      {/* Dropdown */}
       <div
         className={cn(
           'absolute top-full left-0 mt-2 z-50',
@@ -163,6 +174,7 @@ export default function LogoSelector({
           <div className="space-y-1.5">
             {logos.map((logo) => {
               const isSelected = logo.id === selectedLogo.id;
+              const isCurrentBrand = logo.id === getCurrentLogo().id;
 
               return (
                 <button
@@ -175,6 +187,7 @@ export default function LogoSelector({
                     isSelected &&
                       'bg-gray-100 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-600'
                   )}
+                  title={isCurrentBrand ? 'Navigate within current tab' : 'Open in new tab'}
                 >
                   <div
                     className={cn(
@@ -207,6 +220,23 @@ export default function LogoSelector({
 
                   {isSelected && (
                     <span className="ml-auto w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400" />
+                  )}
+
+                  {!isCurrentBrand && (
+                    <svg 
+                      className="ml-auto w-4 h-4 text-gray-400" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24" 
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" 
+                      />
+                    </svg>
                   )}
                 </button>
               );

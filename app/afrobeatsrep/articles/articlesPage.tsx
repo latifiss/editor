@@ -607,7 +607,7 @@ export default function ArticlesPage({ initialArticles }: ArticlesPageProps) {
                               View
                             </button>
                             
-                            <Link href={`/afrobeatsrep/edit-article/${article._id}`} passHref>
+                            <Link href={`/afrobeatsrep/edit-article/${article._id}`} target="_blank" passHref>
                               <button
                                 className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors border border-emerald-200 dark:border-emerald-800 w-full"
                                 title="Edit Article"

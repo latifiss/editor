@@ -758,7 +758,12 @@ export default function ArticlesPage({ initialArticles }: ArticlesPageProps) {
                             </button>
                             
                             {article.isLive ? (
-                              <Link href={`/ghanapolitan/edit-live-article/${article._id}`} passHref>
+                              <Link 
+                                  href={`/ghanapolitan/edit-live-article/${article._id}`} 
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  passHref
+                                >
                                 <button
                                   className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors border border-purple-200 dark:border-purple-800 w-full"
                                   title="Edit Live Article"

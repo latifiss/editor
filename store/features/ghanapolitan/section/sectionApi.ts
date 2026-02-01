@@ -23,12 +23,12 @@ import {
   ApiError,
 } from './sectionTypes';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export const ghanapolitanSectionApi = createApi({
   reducerPath: 'ghanapolitanSectionApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${API_BASE_URL}/ghanapolitan/sections`,
+    baseUrl: `${API_BASE_URL}/api/ghanapolitan/sections`,
     prepareHeaders: (headers) => {
       headers.set('Content-Type', 'application/json');
       return headers;

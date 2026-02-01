@@ -20,6 +20,7 @@ import { ClipLoader } from 'react-spinners';
 import TiptapEditor, { type TiptapEditorRef } from '@/components/tiptap-editor';
 import { categorySubcategories } from '@/categorySubcategories';
 import { selectCurrentAdmin } from '@/store/features/auth/authSlice';
+import { useImageUrlReplacement } from '@/hooks/useImageUrlReplacement';
 
 const TiptapEditorDynamic = dynamic(() => Promise.resolve(TiptapEditor), { ssr: false });
 
@@ -100,33 +101,44 @@ export default function EditFeaturePage() {
   }, []);
 
   useEffect(() => {
-    if (featureData?.data?.feature?.content && editorRef.current && isEditorReady) {
+    if (featureData?.data?.feature?.content && editorRef.current && isEditorReady && isInitialized) {
+      const content = featureData.data.feature.content;
+      if (!content || typeof content !== 'string') return;
+      
       const setContentWithRetry = (retryCount = 0) => {
-        if (retryCount > 3) {
+        if (retryCount > 15) {
+          console.warn('Failed to set editor content after multiple retries');
           return;
         }
         
         try {
-          if (typeof editorRef.current?.setContent === 'function') {
-            const success = editorRef.current.setContent(featureData.data.feature.content);
-            if (success) {
+          if (editorRef.current) {
+            if (typeof editorRef.current.setContent === 'function') {
+              const success = editorRef.current.setContent(content);
+              if (!success) {
+                setTimeout(() => setContentWithRetry(retryCount + 1), 300);
+              }
+            } else if ((editorRef.current as any).editor) {
+              const editor = (editorRef.current as any).editor;
+              if (editor && editor.commands) {
+                editor.commands.setContent(content);
+              } else {
+                setTimeout(() => setContentWithRetry(retryCount + 1), 300);
+              }
             } else {
               setTimeout(() => setContentWithRetry(retryCount + 1), 300);
             }
           } else {
-            if (editorRef.current && (editorRef.current as any).editor) {
-              const editor = (editorRef.current as any).editor;
-              editor.commands.setContent(featureData.data.feature.content);
-            }
+            setTimeout(() => setContentWithRetry(retryCount + 1), 300);
           }
         } catch (error) {
           setTimeout(() => setContentWithRetry(retryCount + 1), 300);
         }
       };
       
-      setContentWithRetry();
+      setTimeout(() => setContentWithRetry(), 300);
     }
-  }, [featureData, isEditorReady]);
+  }, [featureData, isEditorReady, isInitialized]);
 
   useEffect(() => {
     if (admin?.name && !creator) {
@@ -168,17 +180,6 @@ export default function EditFeaturePage() {
       if (feature.image_url) {
         setCurrentImageUrl(feature.image_url);
         setThumbnailPreview(feature.image_url);
-      }
-      
-      if (feature.content && typeof feature.content === 'string') {
-        setTimeout(() => {
-          if (editorRef.current) {
-            const decodedContent = decodeHtmlEntities(feature.content);
-            try {
-              editorRef.current.setContent(decodedContent);
-            } catch (error) {}
-          }
-        }, 500);
       }
       
       setIsInitialized(true);
@@ -428,20 +429,6 @@ export default function EditFeaturePage() {
     ...subcategories.map((sub) => ({ id: sub, label: sub })),
   ];
 
-  const testDataLoading = () => {
-    if (featureData?.data?.feature) {
-      const feature = featureData.data.feature;
-      setTitle(feature.title || '');
-      setDescription(feature.description || '');
-      if (feature.category) {
-        setCategory({ id: feature.category, label: feature.category });
-      }
-      if (feature.tags) {
-        setTags(Array.isArray(feature.tags) ? feature.tags : []);
-      }
-      notify('Data manually set', 'success');
-    }
-  };
 
   if (isLoadingFeature && !featureData?.data?.feature) {
     return (
@@ -486,17 +473,6 @@ export default function EditFeaturePage() {
                 Feature will be authored by: <span className="font-semibold">{admin.name}</span>
               </p>
             )}
-          </div>
-          
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              onClick={testDataLoading}
-              variant="outline"
-              size="sm"
-            >
-              Test Data Load
-            </Button>
           </div>
         </div>
 

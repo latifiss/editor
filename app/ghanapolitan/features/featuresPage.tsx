@@ -90,7 +90,7 @@ export default function FeaturesPage({ initialFeatures }: FeaturesPageProps) {
   const [deleteFeature, { isLoading: isDeleting }] = useDeleteGhanapolitanFeatureMutation();
   
   const handleEdit = (id: string) => {
-    router.push(`/ghanapolitan/edit-feature/${id}`);
+    window.open(`/ghanapolitan/edit-feature/${id}`, '_blank');
   };
   
   const handleDelete = async (id: string, title: string) => {

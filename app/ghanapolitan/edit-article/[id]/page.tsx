@@ -655,35 +655,7 @@ export default function EditArticlePage() {
             )}
           </div>
           
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              onClick={testDataLoading}
-              variant="outline"
-              size="sm"
-            >
-              Debug Data
-            </Button>
-            <Button
-              type="button"
-              onClick={() => {
-                refetch();
-                setIsInitialized(false);
-              }}
-              variant="outline"
-              size="sm"
-            >
-              Refresh Data
-            </Button>
-            <Button
-              type="button"
-              onClick={testSetContent}
-              variant="outline"
-              size="sm"
-            >
-              Test Editor
-            </Button>
-          </div>
+          
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="grid grid-cols-1 lg:grid-cols-[1.4fr_0.6fr] gap-6 lg:gap-8">
@@ -816,15 +788,7 @@ export default function EditArticlePage() {
           </div>
 
           <div className="flex flex-col items-center w-full bg-transparent border border-[#e0e0e0] dark:border-neutral-800 rounded-lg p-4 md:p-6 space-y-6">
-            <Button
-              type="button"
-              onClick={testEditorRef}
-              variant="outline"
-              size="sm"
-              className="mt-2"
-            >
-              Test Editor Ref
-            </Button>
+            
 
             <div className="w-full space-y-2">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">

@@ -91,7 +91,7 @@ export default function FeaturesPage({ initialFeatures }: FeaturesPageProps) {
   const [deleteFeature, { isLoading: isDeleting }] = useDeleteFeatureMutation();
   
   const handleEdit = (id: string) => {
-    router.push(`/ghanascore/edit-feature/${id}`);
+    window.open(`/ghanascore/edit-feature/${id}`, '_blank');
   };
   
   const handleDelete = async (id: string, title: string) => {

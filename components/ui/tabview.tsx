@@ -21,6 +21,7 @@ const allTabs: Record<string, Tab[]> = {
     { id: "graphics", label: "Graphics", icon: ChartBarSquareIcon, path: "/ghanapolitan/graphics" },
     { id: "articles", label: "Articles", icon: DocumentChartBarIcon, path: "/ghanapolitan/articles" },
     { id: "features", label: "Features", icon: CalendarDaysIcon, path: "/ghanapolitan/features" },
+    { id: "sections", label: "Sections", icon: CalendarDaysIcon, path: "/ghanapolitan/sections" },
   ],
   ghanascore: [
     { id: "articles", label: "Articles", icon: DocumentChartBarIcon, path: "/ghanascore/articles" },
@@ -37,7 +38,6 @@ export default function IconTabs() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>("");
   const [currentTabs, setCurrentTabs] = useState<Tab[]>([]);
-  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     let tabs: Tab[] = [];
@@ -91,19 +91,14 @@ export default function IconTabs() {
     }
   }, [pathname]);
 
-  const handleTabClick = async (tab: Tab) => {
-    if (tab.id === activeTab || isNavigating) return;
+  const handleTabClick = (tab: Tab) => {
+    if (tab.id === activeTab) return;
 
-    setIsNavigating(true);
+    // Instantly update UI
     setActiveTab(tab.id);
     
-    try {
-      await router.push(tab.path);
-    } catch (error) {
-      console.error("Navigation error:", error);
-    } finally {
-      setTimeout(() => setIsNavigating(false), 300);
-    }
+    // Navigate immediately
+    router.push(tab.path);
   };
 
   if (currentTabs.length === 0) {
@@ -120,15 +115,13 @@ export default function IconTabs() {
           <button
             key={tab.id}
             onClick={() => handleTabClick(tab)}
-            disabled={isNavigating}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors duration-150",
               "dark:bg-neutral-800/50",
               "hover:bg-[#f0f0f0] dark:hover:bg-neutral-700/50",
               isActive
                 ? "bg-[#ebe8e8] text-gray-700 border-[#e0e0e0] shadow-sm"
-                : "text-gray-600 dark:text-gray-300",
-              isNavigating && "opacity-50 cursor-not-allowed"
+                : "text-gray-600 dark:text-gray-300"
             )}
           >
             <Icon className={cn(

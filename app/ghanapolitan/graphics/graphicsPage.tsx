@@ -96,14 +96,14 @@ export default function GraphicsPage({ initialGraphics }: GraphicsPageProps) {
   const [deleteGraphic, { isLoading: isDeleting }] = useDeleteGraphicMutation();
   
   const handleEdit = (id: string) => {
-    router.push(`/ghanapolitan/edit-graphic/${id}`);
+    window.open(`/ghanapolitan/edit-graphic/${id}`, '_blank');
   };
   
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`Are you sure you want to delete "${title}"? This will also delete all associated images.`)) return;
     
     try {
-      await deleteGraphic({ id }).unwrap(); // Changed to pass object with id
+      await deleteGraphic({ id }).unwrap(); 
       notify('Graphic deleted successfully', 'success');
       refetchGraphics();
     } catch (err: any) {

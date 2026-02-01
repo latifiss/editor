@@ -121,30 +121,44 @@ export default function EditGraphicPage() {
   }, []);
 
   useEffect(() => {
-    if (graphicData?.data?.content && editorRef.current && isEditorReady) {
+    if (graphicData?.data?.graphic?.content && editorRef.current && isEditorReady && isInitialized) {
+      const content = graphicData.data.graphic.content;
+      if (!content || typeof content !== 'string') return;
+      
       const setContentWithRetry = (retryCount = 0) => {
-        if (retryCount > 3) {
+        if (retryCount > 15) {
+          console.warn('Failed to set editor content after multiple retries');
           return;
         }
         
         try {
-          if (typeof editorRef.current?.setContent === 'function') {
-            const success = editorRef.current.setContent(graphicData.data.content);
-            if (!success) {
+          if (editorRef.current) {
+            if (typeof editorRef.current.setContent === 'function') {
+              const success = editorRef.current.setContent(content);
+              if (!success) {
+                setTimeout(() => setContentWithRetry(retryCount + 1), 300);
+              }
+            } else if ((editorRef.current as any).editor) {
+              const editor = (editorRef.current as any).editor;
+              if (editor && editor.commands) {
+                editor.commands.setContent(content);
+              } else {
+                setTimeout(() => setContentWithRetry(retryCount + 1), 300);
+              }
+            } else {
               setTimeout(() => setContentWithRetry(retryCount + 1), 300);
             }
-          } else if (editorRef.current && (editorRef.current as any).editor) {
-            const editor = (editorRef.current as any).editor;
-            editor.commands.setContent(graphicData.data.content);
+          } else {
+            setTimeout(() => setContentWithRetry(retryCount + 1), 300);
           }
         } catch (error) {
           setTimeout(() => setContentWithRetry(retryCount + 1), 300);
         }
       };
       
-      setContentWithRetry();
+      setTimeout(() => setContentWithRetry(), 300);
     }
-  }, [graphicData, isEditorReady]);
+  }, [graphicData, isEditorReady, isInitialized]);
 
   useEffect(() => {
     if (admin?.name && !creator) {
@@ -153,8 +167,8 @@ export default function EditGraphicPage() {
   }, [admin, creator]);
 
   useEffect(() => {
-    if (graphicData && graphicData.data && !isInitialized) {
-      const graphic = graphicData.data;
+    if (graphicData && graphicData.data && graphicData.data.graphic && !isInitialized) {
+      const graphic = graphicData.data.graphic;
       
       setTitle(graphic.title || '');
       setDescription(graphic.description || '');
@@ -182,20 +196,9 @@ export default function EditGraphicPage() {
         }
       }
       
-      if (graphic.featured_image_url) {
-        setCurrentImageUrl(graphic.featured_image_url);
-        setThumbnailPreview(graphic.featured_image_url);
-      }
-      
-      if (graphic.content && typeof graphic.content === 'string') {
-        setTimeout(() => {
-          if (editorRef.current) {
-            const decodedContent = decodeHtmlEntities(graphic.content);
-            try {
-              editorRef.current.setContent(decodedContent);
-            } catch (error) {}
-          }
-        }, 500);
+      if (graphic.image_url) {
+        setCurrentImageUrl(graphic.image_url);
+        setThumbnailPreview(graphic.image_url);
       }
       
       setIsInitialized(true);
@@ -439,7 +442,7 @@ export default function EditGraphicPage() {
     ...subcategories.map((sub) => ({ id: sub, label: sub })),
   ];
 
-  if (isLoadingGraphic && !graphicData?.data) {
+  if (isLoadingGraphic && !graphicData?.data?.graphic) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
