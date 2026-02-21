@@ -94,10 +94,8 @@ export default function IconTabs() {
   const handleTabClick = (tab: Tab) => {
     if (tab.id === activeTab) return;
 
-    // Instantly update UI
     setActiveTab(tab.id);
     
-    // Navigate immediately
     router.push(tab.path);
   };
 

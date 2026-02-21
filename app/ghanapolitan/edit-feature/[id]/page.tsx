@@ -113,14 +113,12 @@ export default function EditGhanapolitanFeaturePage() {
   const [hasErrorBeenHandled, setHasErrorBeenHandled] = useState(false);
   const [isEditorReady, setIsEditorReady] = useState(false);
 
-  // CORRECTED: Get the feature from data - based on your console log
   const feature = featureData?.data?.feature;
 
   console.log('EditGhanapolitanFeaturePage - feature object:', feature);
   console.log('EditGhanapolitanFeaturePage - feature content exists:', !!feature?.content);
   console.log('EditGhanapolitanFeaturePage - feature content preview:', feature?.content?.substring(0, 100));
 
-  // Check if editor ref is ready
   useEffect(() => {
     console.log('EditGhanapolitanFeaturePage - useEffect: Checking editor ref');
     
@@ -133,12 +131,10 @@ export default function EditGhanapolitanFeaturePage() {
       return false;
     };
     
-    // Check immediately
     if (checkEditorRef()) {
       return;
     }
     
-    // Check after a short delay
     const timer = setTimeout(() => {
       checkEditorRef();
     }, 500);
@@ -146,7 +142,6 @@ export default function EditGhanapolitanFeaturePage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Initialize form data when feature data is loaded
   useEffect(() => {
     console.log('EditGhanapolitanFeaturePage - useEffect: Initializing form data', {
       feature: !!feature,
@@ -157,7 +152,6 @@ export default function EditGhanapolitanFeaturePage() {
     if (feature && !isInitialized) {
       console.log('EditGhanapolitanFeaturePage - Initializing form data from feature:', feature);
       
-      // Set form fields
       setTitle(feature.title || '');
       setDescription(feature.description || '');
       setLabel(feature.label || '');
@@ -193,13 +187,11 @@ export default function EditGhanapolitanFeaturePage() {
         setThumbnailPreview(feature.image_url);
       }
       
-      // Mark as initialized
       setIsInitialized(true);
       console.log('EditGhanapolitanFeaturePage - Form initialized');
     }
   }, [feature, admin, isInitialized]);
 
-  // Set editor content when everything is ready
   useEffect(() => {
     console.log('EditGhanapolitanFeaturePage - useEffect: Setting editor content', {
       hasFeature: !!feature,
@@ -216,13 +208,11 @@ export default function EditGhanapolitanFeaturePage() {
       console.log('EditGhanapolitanFeaturePage - Setting editor content, length:', content?.length);
       console.log('EditGhanapolitanFeaturePage - Content preview (first 200 chars):', content?.substring(0, 200));
       
-      // Use a timeout to ensure editor is fully ready
       const timer = setTimeout(() => {
         try {
           if (editorRef.current) {
             console.log('EditGhanapolitanFeaturePage - Attempting to set content');
             
-            // Check what methods are available on the editor ref
             console.log('EditGhanapolitanFeaturePage - Editor ref methods:', Object.keys(editorRef.current));
             
             if (typeof editorRef.current.setContent === 'function') {
@@ -231,7 +221,6 @@ export default function EditGhanapolitanFeaturePage() {
               console.log('EditGhanapolitanFeaturePage - setContent result:', success);
               
               if (!success) {
-                // Try alternative approach
                 console.log('EditGhanapolitanFeaturePage - Trying alternative approach');
                 setTimeout(() => {
                   if (editorRef.current?.setContent) {
@@ -242,7 +231,6 @@ export default function EditGhanapolitanFeaturePage() {
             } else {
               console.warn('EditGhanapolitanFeaturePage - setContent method not found on editor ref');
               
-              // Try accessing the editor instance directly
               const editorInstance = (editorRef.current as any).editor;
               if (editorInstance && typeof editorInstance.commands?.setContent === 'function') {
                 console.log('EditGhanapolitanFeaturePage - Using editor.commands.setContent');
@@ -253,13 +241,12 @@ export default function EditGhanapolitanFeaturePage() {
         } catch (error) {
           console.error('EditGhanapolitanFeaturePage - Error setting content:', error);
         }
-      }, 300); // Increased delay to ensure editor is ready
+      }, 300); 
       
       return () => clearTimeout(timer);
     }
   }, [feature, isEditorReady, isInitialized]);
 
-  // Debug useEffect to track state changes
   useEffect(() => {
     console.log('EditGhanapolitanFeaturePage - Debug state:', {
       featureData,
@@ -270,14 +257,12 @@ export default function EditGhanapolitanFeaturePage() {
     });
   }, [featureData, feature, isEditorReady, isInitialized]);
 
-  // Update creator when admin changes
   useEffect(() => {
     if (admin?.name && !creator) {
       setCreator(admin.name);
     }
   }, [admin, creator]);
 
-  // Handle keydown events for dropdowns
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter' && e.target instanceof HTMLElement) {
@@ -292,7 +277,6 @@ export default function EditGhanapolitanFeaturePage() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Update subcategories when category changes
   useEffect(() => {
     console.log('EditGhanapolitanFeaturePage - Updating subcategories for category:', category);
     if (category) {
@@ -304,7 +288,6 @@ export default function EditGhanapolitanFeaturePage() {
     }
   }, [category]);
 
-  // Handle feature error
   useEffect(() => {
     console.log('EditGhanapolitanFeaturePage - Handling feature error:', {
       featureError,
@@ -550,7 +533,6 @@ export default function EditGhanapolitanFeaturePage() {
     featureDataKeys: feature ? Object.keys(feature) : []
   });
 
-  // Loading state
   if (isLoadingFeature && !feature) {
     console.log('EditGhanapolitanFeaturePage - Showing loading state');
     return (
@@ -563,7 +545,6 @@ export default function EditGhanapolitanFeaturePage() {
     );
   }
 
-  // Error state
   if (featureError && hasErrorBeenHandled) {
     console.log('EditGhanapolitanFeaturePage - Showing error state');
     return (
@@ -581,7 +562,6 @@ export default function EditGhanapolitanFeaturePage() {
     );
   }
 
-  // Main render
   return (
     <div className="flex items-start justify-center min-h-screen my-5 p-4 bg-transparent">
       <div className="w-full max-w-7xl bg-white dark:bg-neutral-900 border border-[#e0e0e0] dark:border-neutral-800 rounded-lg shadow-lg p-4 md:p-6">

@@ -17,20 +17,19 @@ import { Pencil, Trash2, Eye, Plus, Search, XCircle, Calendar, User, Tag, Image 
 import debounce from 'lodash/debounce';
 import { SearchInput } from '@/components/ui/inputs/searchInput';
 
-// Correct interface based on backend model
 interface Graphic {
   _id: string;
   title: string;
   description: string;
-  content: any; // Changed from string to any since it's Schema.Types.Mixed
+  content: any; 
   category: string;
-  subcategory: string[]; // Changed from optional
-  tags: string[]; // Changed from optional
+  subcategory: string[]; 
+  tags: string[]; 
   meta_title?: string;
   meta_description?: string;
   creator: string;
   slug: string;
-  image_url?: string; // Changed from featured_image_url to image_url
+  image_url?: string; 
   published_at: string;
   createdAt: string;
   updatedAt: string;
@@ -73,7 +72,7 @@ export default function GraphicsPage({ initialGraphics }: GraphicsPageProps) {
     isFetching: isSearchFetching
   } = useSearchGraphicsQuery(
     debouncedSearchTerm ? { 
-      q: debouncedSearchTerm, // Changed from query to q to match backend
+      q: debouncedSearchTerm, 
       page, 
       limit 
     } : { q: '', page: 1, limit: 0 },
@@ -152,7 +151,6 @@ export default function GraphicsPage({ initialGraphics }: GraphicsPageProps) {
       if (plainText.length <= maxLength) return plainText;
       return plainText.substring(0, maxLength) + '...';
     } else if (typeof content === 'object' && content !== null) {
-      // Handle object content
       const contentStr = JSON.stringify(content);
       return contentStr.length <= maxLength ? contentStr : contentStr.substring(0, maxLength) + '...';
     }
@@ -317,7 +315,7 @@ export default function GraphicsPage({ initialGraphics }: GraphicsPageProps) {
                             <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border border-[#e0e0e0] dark:border-neutral-700">
                               {graphic.image_url ? (
                                 <img
-                                  src={graphic.image_url} // Changed from featured_image_url to image_url
+                                  src={graphic.image_url}
                                   alt={graphic.title}
                                   className="w-full h-full object-cover"
                                 />

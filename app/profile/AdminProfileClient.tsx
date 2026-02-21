@@ -114,7 +114,6 @@ export default function AdminProfileClient({ initialAdmin = null }: AdminProfile
     }
   };
 
-  // Client-side redirect: only when initialized, not authenticated, and no admin data
   useEffect(() => {
     if (isInitialized && !isAuthenticated && !currentAdmin) {
       router.push("/login");

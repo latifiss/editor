@@ -1,15 +1,10 @@
 import type { JSX } from "react";
-// Via https://cloudinary.com/documentation/media_library_widget
-
 export interface MediaLibraryOptions {
-  // Authentication
 
   api_key: string;
   cloud_name: string;
   use_saml?: boolean;
   username?: string;
-
-  // Clientside
 
   button_caption?: string;
   button_class?: string;
@@ -18,13 +13,9 @@ export interface MediaLibraryOptions {
   remove_header?: boolean;
   z_index?: number;
 
-  // Media Library Behavior
-
   default_transformations?: Array<Array<object>>;
   max_files?: number;
   multiple?: boolean;
-
-  // Custom show() options
 
   asset?: { asset: object };
   collection?: { id?: string | number };
@@ -80,7 +71,7 @@ export interface MediaLibraryInsertResultsAsset {
   duration: number;
   format: string;
   height: number;
-  metadata: any; // Array of?
+  metadata: any; 
   public_id: string;
   resource_type: string;
   secure_url: string;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useSelector } from "react-redux";
 import IconTabs from "../tabview";
 import { 
@@ -97,7 +98,7 @@ export default function Header() {
   }
 
   return (
-    <header className="w-full bg-transparent">
+    <header className="w-full max-w-[100vw] bg-transparent">
       <div className="max-w-6xl mx-auto px-4 h-24 flex items-center justify-between">
         <LogoSelector 
           onLogoChange={(logo) => console.log('Selected:', logo.name)}
@@ -139,16 +140,14 @@ export default function Header() {
               </div>
               
               <div className="py-1">
-                <button
-                  onClick={() => {
-                    router.push("/profile");
-                    setUserMenuOpen(false);
-                  }}
+                <Link
+                  href="/profile"
+                  onClick={() => setUserMenuOpen(false)}
                   className="flex items-center gap-2 px-4 py-2 w-full text-left hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                 >
                   <UserIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                   <span>View Profile</span>
-                </button>
+                </Link>
                 
                 <button
                   onClick={handleLogout}

@@ -92,7 +92,7 @@ export default function EditLiveArticlePage() {
   const [isBreaking, setIsBreaking] = useState(false);
   const [isHeadline, setIsHeadline] = useState(false);
   const [isTopstory, setIsTopstory] = useState(false);
-  const [isLive, setIsLive] = useState(true); // Always true for live articles
+  const [isLive, setIsLive] = useState(true); 
   const [sourceName, setSourceName] = useState('Ghanapolitan');
   const [errors, setErrors] = useState<FormErrors>({});
   const [isInitialized, setIsInitialized] = useState(false);

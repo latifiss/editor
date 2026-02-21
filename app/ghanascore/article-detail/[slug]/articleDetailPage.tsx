@@ -61,7 +61,6 @@ export default function ArticleDetailPage({ initialArticle }: ArticleDetailPageP
     }
   }, [articleData, error]);
 
-  // Only show loading if no initial SSR data and still loading
   if ((isLoading || isFetching) && !article && !hasError) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -153,7 +152,6 @@ export default function ArticleDetailPage({ initialArticle }: ArticleDetailPageP
     return { __html: '' };
   };
 
-  // Sports categories for GhanaScore
   const sportsCategories = [
     'Football',
     'Basketball',

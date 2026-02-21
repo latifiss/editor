@@ -270,10 +270,10 @@ export default function LoginForm() {
           <p className="text-center text-sm text-gray-500 dark:text-gray-400">
             Need admin access?{" "}
             <Link 
-              href="/request-access" 
+              href="/signup" 
               className="underline text-blue-500 dark:text-blue-400 font-bold hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
             >
-              Request access
+              Sign up here
             </Link>
           </p>
           

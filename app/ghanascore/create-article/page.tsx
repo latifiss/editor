@@ -462,7 +462,7 @@ export default function CreateArticlePage() {
                     alt="Selected Thumbnail"
                     fill
                     className="object-cover"
-                    unoptimized // For blob URLs
+                    unoptimized 
                   />
                 ) : (
                   <div className="text-center text-sm font-medium text-gray-500 dark:text-gray-400">

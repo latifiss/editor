@@ -215,7 +215,7 @@ export default function CreateGraphicPage() {
       payload.append('subcategory', selectedSubcategory.label.trim());
     }
     
-    const creatorName = admin?.name || 'Admin'; // Default to 'Admin' as per backend
+    const creatorName = admin?.name || 'Admin'; 
     payload.append('creator', creatorName);
 
     if (tags.length > 0) {
@@ -226,7 +226,7 @@ export default function CreateGraphicPage() {
     payload.append('content', finalHtmlContent);
 
     if (thumbnail) {
-      payload.append('image', thumbnail); // Changed from 'image_url' to 'image' to match backend
+      payload.append('image', thumbnail); 
     }
 
     try {
@@ -243,7 +243,6 @@ export default function CreateGraphicPage() {
       if (err?.data?.message) {
         const errorMessage = err.data.message;
         
-        // Handle specific backend errors
         if (errorMessage.includes('Title, description, content, and category are required')) {
           setErrors({
             title: 'Title is required',

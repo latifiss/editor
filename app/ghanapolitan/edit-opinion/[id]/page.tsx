@@ -83,7 +83,6 @@ export default function EditOpinionPage() {
         setThumbnailPreview(opinion.image_url);
       }
       
-      // Set editor content
       setTimeout(() => {
         if (editorRef.current && opinion.content) {
           editorRef.current.setContent(opinion.content);

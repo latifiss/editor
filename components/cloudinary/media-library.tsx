@@ -44,20 +44,14 @@ const MediaLibrary = ({
   function handleOnLoad() {
     setIsScriptLoading(false);
 
-    // Store the Cloudinary window instance to a ref when the page renders
 
     if (!cloudinary.current && typeof window) {
       cloudinary.current = (window as any).cloudinary;
     }
 
-    // To help improve load time of the widget on first instance, use requestIdleCallback
-    // to trigger widget creation. If requestIdleCallback isn't supported, fall back to
-    // setTimeout: https://caniuse.com/requestidlecallback
-
     function onIdle() {
       if (!widget.current) {
         widget.current = createWidget();
-        //   console.log(widget.current);
       }
     }
 
@@ -137,18 +131,9 @@ const MediaLibrary = ({
     });
   }
 
-  /**
-   * open
-   */
-
   function open() {
-    //  console.log({ widget: widget.current });
     widget.current.show();
   }
-
-  /**
-   * close
-   */
 
   function close() {
     widget.current.hide();

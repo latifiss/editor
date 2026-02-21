@@ -35,13 +35,13 @@ const logos: Logo[] = [
     basePath: '/ghanascore',
   },
   {
-    id: 'afrobeatsreporter',
-    name: 'afrobeatsreporter',
-    smallLogo: '/logos/m-afrobeatsreporter.svg',
-    largeLogo: '/logos/m-afrobeatsreporter.svg',
-    alt: 'Afrobeats Reporter Logo',
-    path: '/afrobeatsrep/articles',
-    basePath: '/afrobeatsrep',
+    id: 'buzzchale',
+    name: 'buzzchale',
+    smallLogo: '/logos/bc_logo.png',
+    largeLogo: '/logos/bc_logo.png',
+    alt: 'Buzz Chale Logo',
+    path: '/buzzchale/articles',
+    basePath: '/buzzchale',
   },
 ];
 

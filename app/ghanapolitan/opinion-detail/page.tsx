@@ -64,7 +64,6 @@ export default function OpinionDetailPage() {
   useEffect(() => {
     if (opinionData?.data) {
       setOpinion(opinionData.data);
-      // Check if opinion is bookmarked in localStorage
       const bookmarks = JSON.parse(localStorage.getItem('ghanapolitan_bookmarks') || '[]');
       setIsBookmarked(bookmarks.includes(opinionData.data._id));
     }

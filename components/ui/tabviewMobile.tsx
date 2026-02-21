@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useSelector } from "react-redux";
 import { cn } from "@/lib/utils";
 import {
@@ -170,16 +171,14 @@ export default function MenuTabs() {
 
               {isAuthenticated && userPopupOpen && (
                 <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-lg shadow-lg z-50 animate-fade-in p-1">
-                  <button
-                    onClick={() => {
-                      router.push("/profile");
-                      setUserPopupOpen(false);
-                    }}
+                  <Link
+                    href="/profile"
+                    onClick={() => setUserPopupOpen(false)}
                     className="flex items-center gap-2 px-4 py-2 w-full text-left hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                   >
                     <UserIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                     <span>View Profile</span>
-                  </button>
+                  </Link>
                   
                   <div className="border-t border-gray-200 dark:border-neutral-700 my-1"></div>
                   

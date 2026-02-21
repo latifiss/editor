@@ -109,7 +109,6 @@ export default function FeatureDetailPage({ initialFeature }: FeatureDetailPageP
     return { __html: '' };
   };
   
-  // Only show loading if no initial SSR data and still loading
   if (isLoading && !feature) {
     return (
       <div className="flex items-center justify-center min-h-screen">

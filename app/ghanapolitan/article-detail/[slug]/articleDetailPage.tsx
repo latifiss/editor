@@ -138,7 +138,6 @@ export default function ArticleDetailPage({
     }
   };
 
-  // Only show loading if no initial SSR data and still loading
   if ((isLoading || isFetching) && !article && !hasError) {
     return (
       <div className="flex items-center justify-center min-h-screen">

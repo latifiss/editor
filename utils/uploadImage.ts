@@ -3,7 +3,6 @@ export const uploadImage = async (file: File): Promise<string> => {
   formData.append("file", file);
 
   try {
-    // Upload through the Next.js backend API
     const response = await fetch("/api/upload", {
       method: "POST",
       body: formData,

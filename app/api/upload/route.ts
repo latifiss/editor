@@ -12,7 +12,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       return NextResponse.json(
         { error: 'File must be an image' },
@@ -20,11 +19,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create FormData for backend
     const backendFormData = new FormData();
     backendFormData.append('image', file);
 
-    // Call backend upload endpoint
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     const uploadUrl = `${backendUrl}/api/upload/image`;
     
@@ -34,7 +31,6 @@ export async function POST(request: NextRequest) {
     const uploadResponse = await fetch(uploadUrl, {
       method: 'POST',
       body: backendFormData,
-      // Note: Don't set Content-Type header - let the browser set it with boundary
     });
 
     console.log('Backend response status:', uploadResponse.status);

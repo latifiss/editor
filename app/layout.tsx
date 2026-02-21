@@ -25,7 +25,7 @@ export default function RootLayout({
   }) {
     const pathname = usePathname();
   return (
-    <html lang="en" className={nunito.variable} suppressHydrationWarning>
+    <html lang="en" className={nunito.variable}>
       <body className="antialiased">
         <Providers>
           <NotificationProvider>

@@ -177,7 +177,6 @@ export default function CreateOpinionPage() {
     payload.append('description', description.trim());
     payload.append('category', category!.label.trim());
     
-    // Use admin name as creator
     if (admin?.name) {
       payload.append('creator', admin.name.trim());
     }
