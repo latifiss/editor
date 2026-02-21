@@ -1011,10 +1011,11 @@ export default function EditArticlePage() {
                 <input
                   type="checkbox"
                   checked={isLive}
+                  disabled
                   onChange={(e) => setIsLive(e.target.checked)}
                   className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                 />
-                <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                <span className="text-sm font-bold text-gray-300 dark:text-gray-200">
                   Live Article
                 </span>
               </label>
