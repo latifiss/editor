@@ -60,7 +60,7 @@ export default function OpinionsPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
-      setPage(1); /
+      setPage(1); 
     }, 500);
     
     return () => clearTimeout(timer);
