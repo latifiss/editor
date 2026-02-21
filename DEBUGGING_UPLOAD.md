@@ -13,7 +13,7 @@
 Make sure `.env.local` has:
 
 ```
-NEXT_PUBLIC_API_URL=http://localhost:8080
+NEXT_PUBLIC_API_URL=https://oak.21centurynews.com
 ```
 
 Verify by running in browser console:
@@ -49,7 +49,7 @@ app.use(cors(corsOptions));
 
 ```bash
 # In another terminal, test your backend upload endpoint
-curl -X POST http://localhost:8080/api/upload/image \
+curl -X POST https://oak.21centurynews.com/api/upload/image \
   -H "Content-Type: application/json" \
   -d '{"test":"data"}'
 ```
@@ -60,7 +60,7 @@ Expected: Should get a response (error about missing file is OK)
 When you try to upload an image, look for these logs:
 
 ```
-Uploading to: http://localhost:8080/api/upload/image
+Uploading to: https://oak.21centurynews.com/api/upload/image
 File: [filename] [mimetype] [size]
 Backend response status: [status code]
 ```
@@ -86,7 +86,7 @@ Backend response status: [status code]
 **Issue: CORS error in browser**
 
 ```
-Access to fetch at 'http://localhost:8080/...' has been blocked by CORS policy
+Access to fetch at 'https://oak.21centurynews.com/...' has been blocked by CORS policy
 ```
 
 Fix: Add to backend CORS:
@@ -113,7 +113,7 @@ allowedOrigins.push('http://localhost:3000');
 
 ```
 Starting upload for file: image.jpg
-Uploading to: http://localhost:8080/api/upload/image
+Uploading to: https://oak.21centurynews.com/api/upload/image
 File: image.jpg image/jpeg 125000
 Backend response status: 200
 Image uploaded successfully: https://pub-xxx.r2.dev/...
@@ -130,7 +130,7 @@ port is listening on 8080
 ### 6. Full Flow Checklist
 
 - [ ] Backend running on port 8080
-- [ ] Frontend has `.env.local` with `NEXT_PUBLIC_API_URL=http://localhost:8080`
+- [ ] Frontend has `.env.local` with `NEXT_PUBLIC_API_URL=https://oak.21centurynews.com`
 - [ ] Frontend restarted after env change (`npm run dev`)
 - [ ] Backend CORS allows `http://localhost:3000`
 - [ ] Backend upload route exists: `POST /api/upload/image`
@@ -156,7 +156,7 @@ In browser console:
 console.log(process.env.NEXT_PUBLIC_API_URL);
 
 // Try a request
-fetch('http://localhost:8080/api/upload/image', {
+fetch('https://oak.21centurynews.com/api/upload/image', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ test: 'data' }),

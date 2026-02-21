@@ -37,7 +37,7 @@ const extractAdminFromResponse = (data: any): Admin => ({
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:8080/api/admin/',
+    baseUrl: 'https://oak.21centurynews.com/api/admin/',
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth.tokens?.accessToken;
       if (token) {

@@ -10,7 +10,7 @@ async function fetchAdminProfile() {
       return null;
     }
 
-    const response = await fetch("http://localhost:8080/api/admin/profile", {
+    const response = await fetch("https://oak.21centurynews.com/api/admin/profile", {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${accessToken}`,

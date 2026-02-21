@@ -143,7 +143,7 @@ export default function EditArticlePage() {
     }
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/ghanapolitan/sections/search?q=${encodeURIComponent(query)}&page=1&limit=10`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://oak.21centurynews.com/api'}/ghanapolitan/sections/search?q=${encodeURIComponent(query)}&page=1&limit=10`);
       const data = await response.json();
       
       if (data.status === 'success' && data.data?.sections) {

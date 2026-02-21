@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const backendFormData = new FormData();
     backendFormData.append('image', file);
 
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://oak.21centurynews.com';
     const uploadUrl = `${backendUrl}/api/upload/image`;
     
     console.log('Uploading to:', uploadUrl);

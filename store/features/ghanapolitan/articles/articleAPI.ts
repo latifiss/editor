@@ -44,7 +44,7 @@ import {
   SectionSlugParams,
 } from './articleTypes';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://oak.21centurynews.com';
 
 export const ghanapolitanArticleApi = createApi({
   reducerPath: 'ghanapolitanArticleApi',
