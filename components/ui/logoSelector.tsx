@@ -108,13 +108,14 @@ export default function LogoSelector({
       return;
     }
 
-    setSelectedLogo(logo);
-    onLogoChange?.(logo);
     setIsOpen(false);
 
     if (logo.id !== getCurrentLogo().id) {
       window.open(logo.path, '_blank');
     } else {
+      setSelectedLogo(logo);
+      onLogoChange?.(logo);
+      
       startTransition(() => {
         router.push(logo.path);
       });
