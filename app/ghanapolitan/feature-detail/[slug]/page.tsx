@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import GhanapolitanFeatureDetailPage from './ghanapolitanFeatureDetailPage';
 import { store } from '@/store/app/store';
 

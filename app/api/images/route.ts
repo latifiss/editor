@@ -1,4 +1,6 @@
-import {v2 as cloudinary} from 'cloudinary';
+export const runtime = 'edge';
+
+import { v2 as cloudinary } from 'cloudinary';
 import {NextResponse} from 'next/server';
 
 export const dynamic = 'force-dynamic';

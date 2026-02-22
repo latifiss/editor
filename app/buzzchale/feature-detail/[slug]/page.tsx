@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import FeatureDetailPage from './featureDetailPage';
 import { store } from '@/store/app/store';
 

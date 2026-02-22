@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import AdminProfileClient from "./AdminProfileClient";
 import { cookies } from "next/headers";
 
