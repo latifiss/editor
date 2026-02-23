@@ -1,0 +1,5 @@
+# Cloudflare Pages / Workers compatibility
+# Required for @cloudflare/next-on-pages (Node.js built-ins in the Worker runtime)
+# https://developers.cloudflare.com/workers/runtime-apis/nodejs/
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
