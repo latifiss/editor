@@ -1,20 +1,16 @@
 export const runtime = 'edge';
 
 import ArticleDetailPage from './articleDetailPage';
-import { store } from '@/store/app/store';
-
-import { articleApi } from '@/store/features/afrobeatsrep/article/articleAPI';
+import { fetchArticleBySlug } from '@/lib/api-fetch';
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const { slug } = params;
   
   try {
-    const response = await store.dispatch(
-      articleApi.endpoints.getArticleBySlug.initiate(slug)
-    );
+    const response = await fetchArticleBySlug(slug, 'afrobeatsrep');
     
-    if ('data' in response && response.data?.data) {
-      const article = response.data.data;
+    if (response?.data) {
+      const article = response.data as { title?: string; description?: string; published_at?: string; creator?: string; tags?: string[]; image_url?: string };
       return {
         title: `${article.title} | AfroBeats`,
         description: article.description || 'Entertainment, music, and lifestyle content from AfroBeats',
@@ -23,7 +19,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
           description: article.description,
           type: 'article',
           publishedTime: article.published_at,
-          authors: [article.creator],
+          authors: article.creator ? [article.creator] : [],
           tags: article.tags,
         },
         twitter: {
@@ -44,16 +40,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 async function getArticleData(slug: string) {
-  try {
-    const response = await store.dispatch(
-      articleApi.endpoints.getArticleBySlug.initiate(slug)
-    );
-    
-    return ('data' in response) ? response.data : null;
-  } catch (error) {
-    console.error('Failed to fetch article:', error);
-    return null;
-  }
+  return fetchArticleBySlug(slug, 'afrobeatsrep');
 }
 
 export default async function Page({ params }: { params: { slug: string } }) {

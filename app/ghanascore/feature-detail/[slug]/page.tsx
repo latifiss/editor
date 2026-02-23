@@ -1,20 +1,16 @@
 export const runtime = 'edge';
 
 import FeatureDetailPage from './featureDetailPage';
-import { store } from '@/store/app/store';
-
-import { featureApi } from '@/store/features/ghanascore/feature/featureAPI';
+import { fetchFeatureBySlug } from '@/lib/api-fetch';
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const { slug } = params;
   
   try {
-    const response = await store.dispatch(
-      featureApi.endpoints.getFeatureBySlug.initiate(slug)
-    );
+    const response = await fetchFeatureBySlug(slug, 'ghanascore');
     
-    if ('data' in response && response.data?.data) {
-      const feature = response.data.data;
+    if (response?.data) {
+      const feature = response.data as { title?: string; description?: string; published_at?: string; creator?: string; tags?: string[]; image_url?: string };
       return {
         title: `${feature.title} | GhanaScore Feature`,
         description: feature.description || 'Sports feature article on GhanaScore',
@@ -23,7 +19,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
           description: feature.description,
           type: 'article',
           publishedTime: feature.published_at,
-          authors: [feature.creator],
+          authors: feature.creator ? [feature.creator] : [],
           tags: feature.tags,
         },
         twitter: {
@@ -44,16 +40,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 async function getFeatureData(slug: string) {
-  try {
-    const response = await store.dispatch(
-      featureApi.endpoints.getFeatureBySlug.initiate(slug)
-    );
-    
-    return ('data' in response) ? response.data : null;
-  } catch (error) {
-    console.error('Failed to fetch feature:', error);
-    return null;
-  }
+  return fetchFeatureBySlug(slug, 'ghanascore');
 }
 
 export default async function Page({ params }: { params: { slug: string } }) {

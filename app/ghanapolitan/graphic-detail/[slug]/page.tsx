@@ -1,20 +1,16 @@
 export const runtime = 'edge';
 
 import GhanapolitanGraphicDetailPage from './ghanapolitanGraphicDetailPage';
-import { store } from '@/store/app/store';
-
-import { graphicApi } from '@/store/features/ghanapolitan/graphic/graphicAPI';
+import { fetchGraphicBySlug } from '@/lib/api-fetch';
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const { slug } = params;
   
   try {
-    const response = await store.dispatch(
-      graphicApi.endpoints.getGraphicBySlug.initiate(slug)
-    );
+    const response = await fetchGraphicBySlug(slug);
     
-    if ('data' in response && response.data?.data) {
-      const graphic = response.data.data;
+    if (response?.data) {
+      const graphic = response.data as { title?: string; description?: string; created_at?: string; creator?: string; tags?: string[]; image_url?: string };
       return {
         title: `${graphic.title} | Ghanapolitan`,
         description: graphic.description || 'Infographic and visual content on Ghanapolitan',
@@ -23,7 +19,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
           description: graphic.description,
           type: 'article',
           publishedTime: graphic.created_at,
-          authors: [graphic.creator],
+          authors: graphic.creator ? [graphic.creator] : [],
           tags: graphic.tags,
         },
         twitter: {
@@ -44,16 +40,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 async function getGraphicData(slug: string) {
-  try {
-    const response = await store.dispatch(
-      graphicApi.endpoints.getGraphicBySlug.initiate(slug)
-    );
-    
-    return ('data' in response) ? response.data : null;
-  } catch (error) {
-    console.error('Failed to fetch graphic:', error);
-    return null;
-  }
+  return fetchGraphicBySlug(slug);
 }
 
 export default async function Page({ params }: { params: { slug: string } }) {

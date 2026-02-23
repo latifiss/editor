@@ -1,20 +1,16 @@
 export const runtime = 'edge';
 
 import ArticleDetailPage from './articleDetailPage';
-import { store } from '@/store/app/store';
-
-import { ghanapolitanArticleApi } from '@/store/features/ghanapolitan/articles/articleAPI';
+import { fetchArticleBySlug, fetchSimilarArticles } from '@/lib/api-fetch';
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const { slug } = params;
   
   try {
-    const response = await store.dispatch(
-      ghanapolitanArticleApi.endpoints.getArticleBySlug.initiate(slug)
-    );
+    const response = await fetchArticleBySlug(slug, 'ghanapolitan');
     
-    if ('data' in response && response.data?.data) {
-      const article = response.data.data;
+    if (response?.data) {
+      const article = response.data as { title?: string; description?: string; published_at?: string; creator?: string; tags?: string[] };
       return {
         title: `${article.title} | GhanaPolitan`,
         description: article.description || 'Read this article on GhanaPolitan',
@@ -23,7 +19,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
           description: article.description,
           type: 'article',
           publishedTime: article.published_at,
-          authors: [article.creator],
+          authors: article.creator ? [article.creator] : [],
           tags: article.tags,
         },
       };
@@ -41,13 +37,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 async function getArticleData(slug: string) {
   try {
     const [articleResponse, similarResponse] = await Promise.all([
-      store.dispatch(articleApi.endpoints.getArticleBySlug.initiate(slug)),
-      store.dispatch(articleApi.endpoints.getSimilarArticles.initiate({ slug }))
+      fetchArticleBySlug(slug, 'ghanapolitan'),
+      fetchSimilarArticles(slug, 'ghanapolitan'),
     ]);
     
     return {
-      article: ('data' in articleResponse) ? articleResponse.data : null,
-      similarArticles: ('data' in similarResponse) ? similarResponse.data : null,
+      article: articleResponse,
+      similarArticles: similarResponse,
     };
   } catch (error) {
     console.error('Failed to fetch article data:', error);
@@ -74,5 +70,3 @@ export default async function Page({ params }: { params: { slug: string } }) {
     />
   );
 }
-
-export const dynamic = 'force-static';

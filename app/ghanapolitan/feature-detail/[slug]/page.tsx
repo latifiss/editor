@@ -1,20 +1,16 @@
 export const runtime = 'edge';
 
 import GhanapolitanFeatureDetailPage from './ghanapolitanFeatureDetailPage';
-import { store } from '@/store/app/store';
-
-import { ghanapolitanFeatureApi } from '@/store/features/ghanapolitan/feature/featureAPI';
+import { fetchFeatureBySlug } from '@/lib/api-fetch';
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const { slug } = params;
   
   try {
-    const response = await store.dispatch(
-      ghanapolitanFeatureApi.endpoints.getGhanapolitanFeatureBySlug.initiate(slug)
-    );
+    const response = await fetchFeatureBySlug(slug, 'ghanapolitan');
     
-    if ('data' in response && response.data?.data) {
-      const feature = response.data.data;
+    if (response?.data) {
+      const feature = response.data as { title?: string; summary?: string; published_date?: string; author?: string; topics?: string[]; image_url?: string };
       return {
         title: `${feature.title} | Ghanapolitan`,
         description: feature.summary || 'In-depth feature article on Ghanapolitan',
@@ -23,7 +19,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
           description: feature.summary,
           type: 'article',
           publishedTime: feature.published_date,
-          authors: [feature.author],
+          authors: feature.author ? [feature.author] : [],
           tags: feature.topics,
         },
         twitter: {
@@ -44,16 +40,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 async function getFeatureData(slug: string) {
-  try {
-    const response = await store.dispatch(
-      ghanapolitanFeatureApi.endpoints.getGhanapolitanFeatureBySlug.initiate(slug)
-    );
-    
-    return ('data' in response) ? response.data : null;
-  } catch (error) {
-    console.error('Failed to fetch feature:', error);
-    return null;
-  }
+  return fetchFeatureBySlug(slug, 'ghanapolitan');
 }
 
 export default async function Page({ params }: { params: { slug: string } }) {
